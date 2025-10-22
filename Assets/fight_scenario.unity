@@ -406,7 +406,7 @@ Transform:
   m_GameObject: {fileID: 440613385}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6, y: 25.39, z: 9}
+  m_LocalPosition: {x: 6, y: 25.32, z: 9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -427,14 +427,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   sidestepForce: 10
-  chargeForce: 20
-  chargeDuration: 0.3
-  jumpForce: 8
+  chargeForce: 30
+  chargeDuration: 0.7
+  jumpForce: 6
   groundCheck: {fileID: 283941003}
   groundCheckRadius: 0.25
   groundLayers:
     serializedVersion: 2
     m_Bits: 64
+  braceMassMultiplier: 3
 --- !u!54 &440613391
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -731,6 +732,7 @@ GameObject:
   - component: {fileID: 1316124917}
   - component: {fileID: 1316124916}
   - component: {fileID: 1316124920}
+  - component: {fileID: 1316124921}
   m_Layer: 0
   m_Name: GoatAI
   m_TagString: AI
@@ -821,7 +823,7 @@ Transform:
   m_GameObject: {fileID: 1316124915}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 17.44, y: 25.48, z: 9}
+  m_LocalPosition: {x: 17.44, y: 25.32, z: 9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -855,6 +857,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 88
   m_CollisionDetection: 0
+--- !u!114 &1316124921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316124915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab82c4e8c433a4c9aba54d5d6ea8211f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  braceMassMultiplier: 3
+  isBraced: 1
+  appearance: {fileID: 1316124917}
+  someMaterial: {fileID: 2100000, guid: 8a5ad964287684d5eb58bcba19aa60b7, type: 2}
 --- !u!1001 &1722938401
 PrefabInstance:
   m_ObjectHideFlags: 0

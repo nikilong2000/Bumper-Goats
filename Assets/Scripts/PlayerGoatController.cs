@@ -6,18 +6,22 @@ using UnityEngine.InputSystem;
 public class PlayerGoatController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    public float moveSpeed = 5f;
-    public float sidestepForce = 10f;
+    [SerializeField] private float moveSpeed;
+    [SerializeField] private float sidestepForce;
 
     [Header("Attack Settings")]
-    public float chargeForce = 1000f;
-    public float chargeDuration = 10f; // change later only for testing
+    [SerializeField] private float chargeForce;
+    [SerializeField] private float chargeDuration; // change later only for testing
 
     [Header("Jump Settings")]
-    public float jumpForce = 8f;
-    public Transform groundCheck;           // Create an empty child at the goat’s feet and assign here
-    public float groundCheckRadius = 0.25f; // Tunable
-    public LayerMask groundLayers;          // Set this to your ground layers in the Inspector
+    [SerializeField] private float jumpForce;
+    [SerializeField] private Transform groundCheck; // empty child at goats feet
+    [SerializeField] private float groundCheckRadius; // Tunable
+    [SerializeField] private LayerMask groundLayers;
+
+    [Header("Brace Settings")]
+    [SerializeField] private float braceMassMultiplier; // how many times heavier when bracing
+
 
 
 
@@ -27,11 +31,14 @@ public class PlayerGoatController : MonoBehaviour
     private Vector2 moveDirection;
     private bool isCharging = false;
     private bool isGrounded = false;
+    private float originalMass;
+
 
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        originalMass = rb.mass;
         playerControls = new PlayerControls();
     }
 
@@ -106,12 +113,15 @@ public class PlayerGoatController : MonoBehaviour
 
     private void OnBrace(InputAction.CallbackContext context)
     {
-        Debug.Log("Bracing!");
+        Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
+
+        rb.mass = originalMass * braceMassMultiplier;
     }
 
     private void OnBraceReleased(InputAction.CallbackContext context)
     {
-        Debug.Log("Brace Released!");
+        Debug.Log("Brace Released! Mass reset to: " + originalMass);
+        rb.mass = originalMass;
     }
 
     private void TryJump()
@@ -120,7 +130,7 @@ public class PlayerGoatController : MonoBehaviour
 
         // Reset vertical velocity so jumps are snappy
         Vector3 v = rb.linearVelocity;
-        v.y = 0f;
+        // v.y = 0f;
         rb.linearVelocity = v;
 
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
