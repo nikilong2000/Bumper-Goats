@@ -1186,24 +1186,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2675829237ac94dd285d1ba3839731bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_PolicyFactory: {fileID: 1490141262}
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 1000
-  m_Reward: 0
-  m_GroupReward: 0
-  m_CumulativeReward: 0
-  m_RequestAction: 0
-  m_RequestDecision: 0
-  m_StepCount: 0
-  m_CompletedEpisodes: 0
-  m_EpisodeId: 0
-  m_Initialized: 0
-  m_GroupId: 0
   playerTransform: {fileID: 2062395499908065152}
-  playerEdgeTransform: {fileID: 780300027}
-  ownEdgeTransform: {fileID: 125599716}
+  centerOfPlatform: {fileID: 0}
+  platformRadius: 5
+  moveSpeed: 4
 --- !u!114 &1490141262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1243,6 +1233,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3760974646660838155, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1ceb1a97955b34eec9ef9ce465895456, type: 2}
     - target: {fileID: 4791827234011756184, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
       propertyPath: m_LocalScale.x
       value: 8
