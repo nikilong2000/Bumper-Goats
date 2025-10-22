@@ -271,11 +271,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &260722513 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2062395499216935992, guid: 8dd33b3f5ab742e4dba39c8c867d6d06, type: 3}
+  m_PrefabInstance: {fileID: 995294139}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &260722517 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2062395499216935995, guid: 8dd33b3f5ab742e4dba39c8c867d6d06, type: 3}
   m_PrefabInstance: {fileID: 995294139}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &260722518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 260722513}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bafd9a5b17b84f11baf186dc453ade0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &283941002
 GameObject:
   m_ObjectHideFlags: 0
@@ -687,13 +704,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 961739749}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.16183709, y: -0, z: -0, w: 0.9868175}
-  m_LocalPosition: {x: 11.851, y: 30.2, z: -12.145}
+  m_LocalRotation: {x: 0.17364816, y: 0, z: 0, w: 0.9848078}
+  m_LocalPosition: {x: 11.37, y: 30.2, z: -7.7099996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 18.627, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 20, y: 0, z: 0}
 --- !u!1001 &995294139
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -749,7 +766,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2062395499216935992, guid: 8dd33b3f5ab742e4dba39c8c867d6d06, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 260722518}
   m_SourcePrefab: {fileID: 100100000, guid: 8dd33b3f5ab742e4dba39c8c867d6d06, type: 3}
 --- !u!1 &1088773983
 GameObject:
