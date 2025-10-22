@@ -16,11 +16,25 @@ public class PlayerAnimation : MonoBehaviour
         {
             bool isRunningForward = Input.GetKey(KeyCode.D);
             bool isRunningBackward = Input.GetKey(KeyCode.A);
-            bool isAttacking = Input.GetKey(KeyCode.Space);
 
+            bool doAttack = Input.GetKeyDown(KeyCode.Space);
+            bool doJump = Input.GetKeyDown(KeyCode.W);
+
+            // mAnimator.SetBool("IsJumping", isJumping)   ;
             mAnimator.SetBool("IsRunningForward", isRunningForward);
             mAnimator.SetBool("IsRunningBackward", isRunningBackward);
-            mAnimator.SetBool("IsAttacking", isAttacking);
+            // mAnimator.SetBool("IsAttacking", isAttacking);
+
+
+            if (doJump)
+            {
+                mAnimator.SetTrigger("DoJump");
+            }
+
+            if (doAttack)
+            {
+                mAnimator.SetTrigger("DoAttack");
+            }
 
             // Optional: If you need to know direction, you can use a float
             // For example, in your Animator, use a float parameter "Direction"
