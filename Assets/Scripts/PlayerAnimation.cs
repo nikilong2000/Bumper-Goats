@@ -16,6 +16,7 @@ public class PlayerAnimation : MonoBehaviour
         {
             bool isRunningForward = Input.GetKey(KeyCode.D);
             bool isRunningBackward = Input.GetKey(KeyCode.A);
+            bool isBracing = Input.GetKey(KeyCode.LeftControl);
 
             bool doAttack = Input.GetKeyDown(KeyCode.Space);
             bool doJump = Input.GetKeyDown(KeyCode.W);
@@ -23,6 +24,7 @@ public class PlayerAnimation : MonoBehaviour
             // mAnimator.SetBool("IsJumping", isJumping)   ;
             mAnimator.SetBool("IsRunningForward", isRunningForward);
             mAnimator.SetBool("IsRunningBackward", isRunningBackward);
+            mAnimator.SetBool("IsBracing", isBracing);
             // mAnimator.SetBool("IsAttacking", isAttacking);
 
 
