@@ -1,10 +1,8 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerGoatController : MonoBehaviour
+public class GoatController : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed;
@@ -28,54 +26,27 @@ public class PlayerGoatController : MonoBehaviour
     [SerializeField] private float dodgeDuration = 0.3f; // How long the dodge animation takes
     [SerializeField] private float dodgeReturnSpeed = 5f; // How fast to return to z=0
 
-
-
-
-
-
+    // Internal state
     private Rigidbody rb;
-    private PlayerControls playerControls; // This will hold a reference to our Input Actions
-    private Vector2 moveDirection;
     private float originalMass;
     private bool isCharging = false;
     private bool isGrounded = false;
+    private bool isBraced = false;
     private bool isDodging = false;
-
-
-
+    private Vector2 moveDirection;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         originalMass = rb.mass;
-        playerControls = new PlayerControls();
-    }
-
-    private void OnEnable()
-    {
-        // Start listening for actions from the "Goat" action map
-        playerControls.Goat.Enable();
-
-        playerControls.Goat.Move.performed += ctx => moveDirection = ctx.ReadValue<Vector2>();
-        playerControls.Goat.Move.canceled += ctx => moveDirection = Vector2.zero;
-
-        // For button press actions (performed when the button is pressed down)
-        playerControls.Goat.Dodge.performed += OnDodge;
-        playerControls.Goat.Attack.performed += OnAttack;
-        playerControls.Goat.Jump.performed += OnJump;
-        playerControls.Goat.Brace.performed += OnBrace;
-        playerControls.Goat.Brace.canceled += OnBraceReleased; // Listen for button release too
-    }
-
-    // OnDisable is called when the object becomes disabled or inactive
-    private void OnDisable()
-    {
-        // Stop listening for actions to avoid errors
-        playerControls.Goat.Disable();
     }
 
     private void Update()
     {
+        // Ground check (make sure groundCheck is set in the Inspector)
+        if (groundCheck != null)
+            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayers, QueryTriggerInteraction.Ignore);
+
         // Smoothly return to z=0 when not dodging
         if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
         {
@@ -83,7 +54,6 @@ public class PlayerGoatController : MonoBehaviour
             pos.z = Mathf.Lerp(pos.z, 9f, Time.deltaTime * dodgeReturnSpeed);
             transform.position = pos;
         }
-
     }
 
     // FixedUpdate is called on a fixed time step, ideal for physics calculations
@@ -94,24 +64,17 @@ public class PlayerGoatController : MonoBehaviour
         Vector3 move = new(moveDirection.x, moveDirection.y, 0);
 
         // Apply the movement to the Rigidbody
-        rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed); // fixed: use rb.velocity
-
+        rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
     }
 
-    // --- Methods that are CALLED BY the Input System ---
-
-    private void OnDodge(InputAction.CallbackContext context)
-    {
-        Debug.Log("Dodge Action Triggered!");
-
-        if (!isDodging)
-        {
-            StartCoroutine(DodgeAnimation());
-        }
+    // Public interface for actions
+    public void Move(Vector2 direction) 
+    { 
+        moveDirection = direction;
     }
 
-    private void OnAttack(InputAction.CallbackContext context)
-    {
+    public void Attack() 
+    { 
         Debug.Log("Charge Action Triggered!");
 
         // Don't charge if already charging
@@ -121,45 +84,48 @@ public class PlayerGoatController : MonoBehaviour
         }
     }
 
-    private void OnJump(InputAction.CallbackContext context)
-    {
-        Debug.Log("Jump Action Triggered!");
+    public void Dodge(Vector2 direction) 
+    { 
+        Debug.Log("Dodge Action Triggered!");
 
-        // Ground check (make sure groundCheck is set in the Inspector)
-        if (groundCheck != null)
+        if (!isDodging)
         {
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayers, QueryTriggerInteraction.Ignore);
-            TryJump();
+            StartCoroutine(DodgeAnimation());
         }
-
     }
 
-
-    private void OnBrace(InputAction.CallbackContext context)
-    {
-        Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
-
-        rb.mass = originalMass * braceMassMultiplier;
+    public void Brace(bool shouldBrace) 
+    { 
+        if (shouldBrace)
+        {
+            Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
+            rb.mass = originalMass * braceMassMultiplier;
+            isBraced = true;
+        }
+        else
+        {
+            Debug.Log("Brace Released! Mass reset to: " + originalMass);
+            rb.mass = originalMass;
+            isBraced = false;
+        }
     }
 
-    private void OnBraceReleased(InputAction.CallbackContext context)
-    {
-        Debug.Log("Brace Released! Mass reset to: " + originalMass);
-        rb.mass = originalMass;
-    }
-
-    private void TryJump()
-    {
+    public void Jump() 
+    { 
         if (!isGrounded || isCharging) return;
 
         // Reset vertical velocity so jumps are snappy
         Vector3 v = rb.linearVelocity;
-        // v.y = 0f;
         rb.linearVelocity = v;
 
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
     }
-
+    
+    // Getters for AI observations
+    public bool IsGrounded => isGrounded;
+    public bool IsCharging => isCharging;
+    public bool IsBraced => isBraced;
+    public bool IsDodging => isDodging;
 
     private System.Collections.IEnumerator ChargeAttack()
     {
@@ -176,7 +142,6 @@ public class PlayerGoatController : MonoBehaviour
 
         isCharging = false;
     }
-
 
     private System.Collections.IEnumerator DodgeAnimation()
     {
@@ -207,7 +172,4 @@ public class PlayerGoatController : MonoBehaviour
         isDodging = false;
         // The Update method will handle returning to z=0
     }
-
-
-
 }

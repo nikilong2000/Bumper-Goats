@@ -425,6 +425,7 @@ GameObject:
   - component: {fileID: 440613386}
   - component: {fileID: 440613391}
   - component: {fileID: 440613390}
+  - component: {fileID: 440613392}
   m_Layer: 0
   m_Name: GoatPlayer
   m_TagString: Player
@@ -532,23 +533,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 440613385}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 947e9b450689b4c5199372ab9153318c, type: 3}
+  m_Script: {fileID: 11500000, guid: b8f96831e119745f283c6681a867b163, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
-  sidestepForce: 10
-  chargeForce: 30
-  chargeDuration: 0.7
-  jumpForce: 6
-  groundCheck: {fileID: 283941003}
-  groundCheckRadius: 0.25
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  braceMassMultiplier: 3
-  dodgeDistance: 1.4
-  dodgeDuration: 0.3
-  dodgeReturnSpeed: 5
 --- !u!54 &440613391
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -576,6 +563,32 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 0
+--- !u!114 &440613392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 440613385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 049c1956ca97d4318aed0f321d481199, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 5
+  sidestepForce: 10
+  chargeForce: 30
+  chargeDuration: 0.7
+  jumpForce: 6
+  groundCheck: {fileID: 283941003}
+  groundCheckRadius: 0.25
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  braceMassMultiplier: 3
+  dodgeDistance: 1.4
+  dodgeDuration: 0.3
+  dodgeReturnSpeed: 5
 --- !u!1001 &556075997
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1194,6 +1207,7 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 1000
   playerTransform: {fileID: 2062395499908065152}
+  opponentTransform: {fileID: 0}
   centerOfPlatform: {fileID: 0}
   platformRadius: 5
   moveSpeed: 4
