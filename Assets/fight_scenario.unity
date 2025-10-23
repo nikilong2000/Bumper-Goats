@@ -646,6 +646,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b9ce8f513172a487e88bd74c6b4dc6bc, type: 3}
+--- !u!4 &561480126 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3994293088786367827, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
+  m_PrefabInstance: {fileID: 1722938401}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &582982776
 GameObject:
   m_ObjectHideFlags: 0
@@ -740,13 +745,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6701006173359823049, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1490141262}
-    - targetCorrespondingSourceObject: {fileID: 6701006173359823049, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1490141261}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
 --- !u!1 &780300023
 GameObject:
@@ -1039,6 +1038,10 @@ GameObject:
   - component: {fileID: 1316124916}
   - component: {fileID: 1316124920}
   - component: {fileID: 1316124921}
+  - component: {fileID: 1316124924}
+  - component: {fileID: 1316124923}
+  - component: {fileID: 1316124922}
+  - component: {fileID: 1316124925}
   m_Layer: 0
   m_Name: GoatAI
   m_TagString: AI
@@ -1171,7 +1174,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316124915}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ab82c4e8c433a4c9aba54d5d6ea8211f, type: 3}
   m_Name: 
@@ -1180,24 +1183,40 @@ MonoBehaviour:
   isBraced: 1
   appearance: {fileID: 1316124917}
   someMaterial: {fileID: 2100000, guid: 8a5ad964287684d5eb58bcba19aa60b7, type: 2}
---- !u!1 &1490141255 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6701006173359823049, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
-  m_PrefabInstance: {fileID: 766646247}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1490141256 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3078002635957609246, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
-  m_PrefabInstance: {fileID: 766646247}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1490141261
+--- !u!114 &1316124922
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1490141255}
-  m_Enabled: 0
+  m_GameObject: {fileID: 1316124915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 049c1956ca97d4318aed0f321d481199, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 5
+  sidestepForce: 10
+  chargeForce: 30
+  chargeDuration: 0.7
+  jumpForce: 6
+  groundCheck: {fileID: 283941003}
+  groundCheckRadius: 0.25
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  braceMassMultiplier: 3
+  dodgeDistance: 1.4
+  dodgeDuration: 0.3
+  dodgeReturnSpeed: 5
+--- !u!114 &1316124923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316124915}
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2675829237ac94dd285d1ba3839731bb, type: 3}
   m_Name: 
@@ -1205,43 +1224,60 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 1000
-  playerTransform: {fileID: 2062395499908065152}
-  opponentTransform: {fileID: 0}
-  centerOfPlatform: {fileID: 0}
-  platformRadius: 5
-  moveSpeed: 4
---- !u!114 &1490141262
+  MaxStep: 0
+  opponentTransform: {fileID: 440613389}
+  platformTransform: {fileID: 561480126}
+  platformRadius: 7.5
+--- !u!114 &1316124924
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1490141255}
-  m_Enabled: 0
+  m_GameObject: {fileID: 1316124915}
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 1
+    VectorObservationSize: 14
     NumStackedVectorObservations: 1
     m_ActionSpec:
-      m_NumContinuousActions: 0
-      BranchSizes: 01000000
-    VectorActionSize: 01000000
+      m_NumContinuousActions: 1
+      BranchSizes: 04000000
+    VectorActionSize: 
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 0
   m_BehaviorType: 0
-  m_BehaviorName: AiGoat
+  m_BehaviorName: Goat
   TeamId: 0
   m_UseChildSensors: 1
   m_UseChildActuators: 1
   m_DeterministicInference: 0
   m_ObservableAttributeHandling: 0
+--- !u!114 &1316124925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316124915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da1436ad7a27c48fe9ae0b6588b3b128, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  trainingTimeScale: 0.5
+  normalTimeScale: 1
+--- !u!4 &1490141256 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3078002635957609246, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
+  m_PrefabInstance: {fileID: 766646247}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1722938401
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1258,9 +1294,17 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 1ceb1a97955b34eec9ef9ce465895456, type: 2}
+    - target: {fileID: 3994293088786367827, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3994293088786367827, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4791827234011756184, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
       propertyPath: m_LocalScale.x
-      value: 8
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4791827234011756184, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
       propertyPath: m_LocalScale.y
@@ -1268,7 +1312,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4791827234011756184, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
       propertyPath: m_LocalScale.z
-      value: 8
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4791827234011756184, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1308,6 +1352,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4791827234011756184, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4791827234011756184, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
+      propertyPath: m_ConstrainProportionsScale
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5274891468067073058, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
