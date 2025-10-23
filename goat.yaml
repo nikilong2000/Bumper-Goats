@@ -1,5 +1,5 @@
 behaviors:
-  AiGoat:
+  Goat:
     trainer_type: ppo
     hyperparameters:
       learning_rate: 3.0e-4

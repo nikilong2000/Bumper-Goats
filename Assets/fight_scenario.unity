@@ -730,6 +730,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3845038496568076874, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6701006173359823049, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
       propertyPath: m_Name
       value: GoatOpponent
@@ -1042,6 +1046,7 @@ GameObject:
   - component: {fileID: 1316124923}
   - component: {fileID: 1316124922}
   - component: {fileID: 1316124925}
+  - component: {fileID: 1316124926}
   m_Layer: 0
   m_Name: GoatAI
   m_TagString: AI
@@ -1241,11 +1246,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 14
+    VectorObservationSize: 23
     NumStackedVectorObservations: 1
     m_ActionSpec:
-      m_NumContinuousActions: 1
-      BranchSizes: 04000000
+      m_NumContinuousActions: 2
+      BranchSizes: 05000000
     VectorActionSize: 
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
@@ -1273,6 +1278,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trainingTimeScale: 0.5
   normalTimeScale: 1
+--- !u!114 &1316124926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316124915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DecisionPeriod: 1
+  DecisionStep: 0
+  TakeActionsBetweenDecisions: 1
 --- !u!4 &1490141256 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3078002635957609246, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
