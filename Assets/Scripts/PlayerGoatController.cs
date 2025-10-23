@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -22,6 +23,12 @@ public class PlayerGoatController : MonoBehaviour
     [Header("Brace Settings")]
     [SerializeField] private float braceMassMultiplier; // how many times heavier when bracing
 
+    [Header("Dodge Settings")]
+    [SerializeField] private float dodgeDistance = 2f; // How far to shift on z-axis
+    [SerializeField] private float dodgeDuration = 0.3f; // How long the dodge animation takes
+    [SerializeField] private float dodgeReturnSpeed = 5f; // How fast to return to z=0
+
+
 
 
 
@@ -32,6 +39,10 @@ public class PlayerGoatController : MonoBehaviour
     private bool isCharging = false;
     private bool isGrounded = false;
     private float originalMass;
+
+    private bool isDodging = false;
+    private float targetZPosition = 9f;
+
 
 
 
@@ -75,6 +86,15 @@ public class PlayerGoatController : MonoBehaviour
         {
             TryJump();
         }
+
+        // Smoothly return to z=0 when not dodging
+        if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
+        {
+            Vector3 pos = transform.position;
+            pos.z = Mathf.Lerp(pos.z, 9f, Time.deltaTime * dodgeReturnSpeed);
+            transform.position = pos;
+        }
+
     }
 
     // FixedUpdate is called on a fixed time step, ideal for physics calculations
@@ -94,9 +114,11 @@ public class PlayerGoatController : MonoBehaviour
     private void OnDodge(InputAction.CallbackContext context)
     {
         Debug.Log("Dodge Action Triggered!");
-        // We'll add a force to the side. "transform.right" gives us the goat's local right direction.
-        // We can check the moveDirection to see if they were holding A or D to decide which way to step.
-        rb.AddForce(moveDirection.x * sidestepForce * transform.right, ForceMode.Impulse);
+
+        if (!isDodging)
+        {
+            StartCoroutine(DodgeAnimation());
+        }
     }
 
     private void OnAttack(InputAction.CallbackContext context)
@@ -152,6 +174,38 @@ public class PlayerGoatController : MonoBehaviour
 
         isCharging = false;
     }
+
+
+    private System.Collections.IEnumerator DodgeAnimation()
+    {
+        isDodging = true;
+
+        // Determine dodge direction based on current movement or default to right
+        // float direction = moveDirection.x >= 0 ? 1f : -1f;
+
+        float direction = UnityEngine.Random.value > 0.5f ? 1f : -1f;
+
+        Vector3 startPos = transform.position;
+        Vector3 targetPos = startPos + new Vector3(0, 0, dodgeDistance * direction);
+
+        float elapsed = 0f;
+
+        // Animate to dodge position
+        while (elapsed < dodgeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / dodgeDuration;
+
+            Vector3 newPos = Vector3.Lerp(startPos, targetPos, t);
+            transform.position = newPos;
+
+            yield return null;
+        }
+
+        isDodging = false;
+        // The Update method will handle returning to z=0
+    }
+
 
 
 }

@@ -20,6 +20,7 @@ public class PlayerAnimation : MonoBehaviour
 
             bool doAttack = Input.GetKeyDown(KeyCode.Space);
             bool doJump = Input.GetKeyDown(KeyCode.W);
+            bool doSpinLeft = Input.GetKeyDown(KeyCode.LeftShift);
 
             // mAnimator.SetBool("IsJumping", isJumping)   ;
             mAnimator.SetBool("IsRunningForward", isRunningForward);
@@ -36,6 +37,11 @@ public class PlayerAnimation : MonoBehaviour
             if (doAttack)
             {
                 mAnimator.SetTrigger("DoAttack");
+            }
+
+            if (doSpinLeft)
+            {
+                mAnimator.SetTrigger("DoSpinLeft");
             }
 
             // Optional: If you need to know direction, you can use a float
