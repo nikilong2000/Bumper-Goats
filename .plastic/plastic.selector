@@ -1,4 +1,0 @@
-repository "Bumper Goats/Bumper Goats@6872782492231@cloud"
-  path "/"
-    br "/main"
-    co "/main"
