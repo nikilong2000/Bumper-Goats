@@ -6,19 +6,21 @@ using Unity.MLAgents.Sensors;
 public class AiGoatScript : Agent
 {
     [Header("References")]
-    [SerializeField] private Transform playerTransform;
-    [SerializeField] private Transform centerOfPlatform;
+    [SerializeField] private Transform opponentTransform;
+    [SerializeField] private Transform platformTransform;
 
     [Header("Environment Settings")]
     [SerializeField] private float platformRadius = 5f;
-    [SerializeField] private float moveSpeed = 4f;
 
     private Rigidbody rb;
-    private Rigidbody playerRb;
+    private Rigidbody opponentRb;
+    
+    private GoatController goatController;
+    private GoatController opponentController;
 
     // Store initial positions for episode reset
-    private Vector3 aiStartPosition;
-    private Vector3 playerStartPosition;
+    private Vector3 startPosition;
+    private Vector3 opponentStartPosition;
 
     /// <summary>
     /// Called once when the agent is first initialized
@@ -26,14 +28,16 @@ public class AiGoatScript : Agent
     public override void Initialize()
     {
         rb = GetComponent<Rigidbody>();
-        if (playerTransform != null)
+        goatController = GetComponent<GoatController>();
+        if (opponentTransform != null)
         {
-            playerRb = playerTransform.GetComponent<Rigidbody>();
+            opponentRb = opponentTransform.GetComponent<Rigidbody>();
+            opponentController = opponentTransform.GetComponent<GoatController>();
         }
 
         // Store starting positions
-        aiStartPosition = transform.position;
-        playerStartPosition = playerTransform.position;
+        startPosition = transform.position;
+        opponentStartPosition = opponentTransform.position;
     }
 
     /// <summary>
@@ -43,21 +47,26 @@ public class AiGoatScript : Agent
     public override void OnEpisodeBegin()
     {
         // Reset AI goat position and physics
-        transform.position = aiStartPosition;
-        transform.rotation = Quaternion.identity;
+        transform.position = startPosition;
+        // transform.rotation = Quaternion.identity;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        // Reset player goat position and physics
-        if (playerTransform != null)
+        // Reset opponent goat position and physics only if it's a player
+        if (opponentTransform != null)
         {
-            playerTransform.position = playerStartPosition;
-            playerTransform.rotation = Quaternion.identity;
-
-            if (playerRb != null)
+            // Check if the opponent is a player by looking for PlayerGoatController component
+            PlayerGoatController playerController = opponentTransform.GetComponent<PlayerGoatController>();
+            if (playerController != null) // Only reset if it's a player
             {
-                playerRb.linearVelocity = Vector3.zero;
-                playerRb.angularVelocity = Vector3.zero;
+                opponentTransform.position = opponentStartPosition;
+                opponentTransform.rotation = Quaternion.identity;
+
+                if (opponentRb != null)
+                {
+                    opponentRb.linearVelocity = Vector3.zero;
+                    opponentRb.angularVelocity = Vector3.zero;
+                }
             }
         }
     }
@@ -73,7 +82,7 @@ public class AiGoatScript : Agent
 
         // 1. AI's position relative to platform center (3 values: x, y, z)
         // This helps the AI know where it is on the platform
-        Vector3 relativePosition = transform.position - centerOfPlatform.position;
+        Vector3 relativePosition = transform.position - platformTransform.position;
         sensor.AddObservation(relativePosition);
 
         // 2. AI's linearVelocity (3 values: x, y, z)
@@ -82,7 +91,7 @@ public class AiGoatScript : Agent
 
         // 3. AI's distance from platform edge (1 value)
         // Critical for self-preservation
-        float distanceFromCenter = Vector3.Distance(transform.position, centerOfPlatform.position);
+        float distanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
         float distanceToEdge = platformRadius - distanceFromCenter;
         sensor.AddObservation(distanceToEdge / platformRadius); // Normalized 0-1
 
@@ -91,30 +100,48 @@ public class AiGoatScript : Agent
         Vector3 forward = transform.forward;
         sensor.AddObservation(new Vector2(forward.x, forward.z));
 
-        // --- Player Awareness (6 observations) ---
+        // 5. AI's state information (3 values: isGrounded, isCharging, isBraced, isDodging)
+        // Helps AI understand its current state
+        sensor.AddObservation(goatController.IsGrounded ? 1f : 0f);
+        sensor.AddObservation(goatController.IsCharging ? 1f : 0f);
+        sensor.AddObservation(goatController.IsBraced ? 1f : 0f);
+        sensor.AddObservation(goatController.IsDodging ? 1f : 0f);
 
-        if (playerTransform != null)
+        // --- Opponent Awareness (6 observations) ---
+
+        if (opponentTransform != null)
         {
-            // 5. Vector from AI to Player (3 values: x, y, z)
+            // 6. Vector from AI to Player (3 values: x, y, z)
             // This is the most important observation for pushing
-            Vector3 directionToPlayer = playerTransform.position - transform.position;
-            sensor.AddObservation(directionToPlayer);
+            Vector3 directionToOpponent = opponentTransform.position - transform.position;
+            sensor.AddObservation(directionToOpponent);
 
-            // 6. Player's linearVelocity (3 values: x, y, z)
+            // 7. Opponent's linearVelocity (3 values: x, y, z)
             // Helps AI predict where player is moving
-            if (playerRb != null)
+            if (opponentRb != null)
             {
-                sensor.AddObservation(playerRb.linearVelocity);
+                sensor.AddObservation(opponentRb.linearVelocity);
             }
             else
             {
                 sensor.AddObservation(Vector3.zero);
             }
+
+            // 8. Opponent's state information (3 values: isGrounded, isCharging, isBraced, isDodging)
+            // Helps AI understand the opponent's current state
+            sensor.AddObservation(opponentController.IsGrounded ? 1f : 0f);
+            sensor.AddObservation(opponentController.IsCharging ? 1f : 0f);
+            sensor.AddObservation(opponentController.IsBraced ? 1f : 0f);
+            sensor.AddObservation(opponentController.IsDodging ? 1f : 0f);
         }
         else // If player reference is missing, observe zeros
         {
             sensor.AddObservation(Vector3.zero); // Direction to player
             sensor.AddObservation(Vector3.zero); // Player linearVelocity
+            for (int i = 0; i < 4; i++)
+            {
+                sensor.AddObservation(0f); // Opponent state information
+            }
         }
     }
 
@@ -129,16 +156,39 @@ public class AiGoatScript : Agent
         float moveX = actions.ContinuousActions[0];
         float moveZ = actions.ContinuousActions[1];
 
-        // Apply movement (simple version for now)
-        Vector3 movement = new Vector3(moveX, 0, moveZ);
-        transform.position += movement * moveSpeed * Time.fixedDeltaTime;
+        // Use GoatController for movement
+        Vector2 moveDirection = new Vector2(moveX, moveZ);
+        goatController.Move(moveDirection);
+
+        // --- Discrete Actions: Combat Actions (4 actions) ---
+        // 0: No action, 1: Attack, 2: Dodge, 3: Jump, 4: Brace
+        int actionType = actions.DiscreteActions[0];
+        
+        switch (actionType)
+        {
+            case 1: // Attack
+                goatController.Attack();
+                break;
+            case 2: // Dodge
+                goatController.Dodge(moveDirection);
+                break;
+            case 3: // Jump
+                goatController.Jump();
+                break;
+            case 4: // Brace
+                goatController.Brace(true);
+                break;
+            default: // No action or 0
+                goatController.Brace(false);
+                break;
+        }
 
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
         AddReward(-0.001f);
 
         // --- Penalty for Being Near Edge (Self-Preservation) ---
-        float distanceFromCenter = Vector3.Distance(transform.position, centerOfPlatform.position);
+        float distanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
         float distanceToEdge = platformRadius - distanceFromCenter;
 
         if (distanceToEdge < 1.5f) // Danger zone
@@ -147,11 +197,11 @@ public class AiGoatScript : Agent
         }
 
         // --- Small Reward for Being Close to Player (Engagement) ---
-        if (playerTransform != null)
+        if (opponentTransform != null)
         {
-            float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+            float distanceToOpponent = Vector3.Distance(transform.position, opponentTransform.position);
             // Inverse distance reward: closer = better
-            AddReward(0.01f / (1.0f + distanceToPlayer));
+            AddReward(0.01f / (1.0f + distanceToOpponent));
         }
     }
 
@@ -162,10 +212,18 @@ public class AiGoatScript : Agent
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
+        ActionSegment<int> discreteActions = actionsOut.DiscreteActions;
 
-        // Use arrow keys or WASD to control
+        // Use arrow keys or WASD to control movement
         continuousActions[0] = Input.GetAxisRaw("Horizontal"); // A/D or Left/Right
         continuousActions[1] = Input.GetAxisRaw("Vertical");   // W/S or Up/Down
+
+        // Use number keys for combat actions
+        if (Input.GetKey(KeyCode.Alpha1)) discreteActions[0] = 1; // Attack
+        else if (Input.GetKey(KeyCode.Alpha2)) discreteActions[0] = 2; // Dodge
+        else if (Input.GetKey(KeyCode.Alpha3)) discreteActions[0] = 3; // Jump
+        else if (Input.GetKey(KeyCode.Alpha4)) discreteActions[0] = 4; // Brace
+        else discreteActions[0] = 0; // No action
     }
 
     /// <summary>

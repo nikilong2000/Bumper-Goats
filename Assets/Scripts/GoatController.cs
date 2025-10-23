@@ -1,11 +1,13 @@
+<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
 using System;
 using Unity.VisualScripting;
+=======
+>>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerGoatController : MonoBehaviour
+public class GoatController : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed;
@@ -30,63 +32,42 @@ public class PlayerGoatController : MonoBehaviour
     [SerializeField] private float dodgeDuration = 0.3f; // How long the dodge animation takes
     [SerializeField] private float dodgeReturnSpeed = 5f; // How fast to return to z=0
 
-
-
-
-
-
+    // Internal state
     private Rigidbody rb;
-    private PlayerControls playerControls; // This will hold a reference to our Input Actions
-    private Vector2 moveDirection;
     private float originalMass;
     private bool isCharging = false;
     private bool isGrounded = false;
+    private bool isBraced = false;
     private bool isDodging = false;
+<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
     // private bool isJumping = false;
     private float jumpStartXVelocity; // Store x-velocity when jump starts
 
 
 
+=======
+    private Vector2 moveDirection;
+>>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         originalMass = rb.mass;
-        playerControls = new PlayerControls();
-    }
-
-    private void OnEnable()
-    {
-        // Start listening for actions from the "Goat" action map
-        playerControls.Goat.Enable();
-
-        playerControls.Goat.Move.performed += ctx => moveDirection = ctx.ReadValue<Vector2>();
-        playerControls.Goat.Move.canceled += ctx => moveDirection = Vector2.zero;
-
-        // For button press actions (performed when the button is pressed down)
-        playerControls.Goat.Dodge.performed += OnDodge;
-        playerControls.Goat.Attack.performed += OnAttack;
-        playerControls.Goat.Jump.performed += OnJump;
-        playerControls.Goat.Brace.performed += OnBrace;
-        playerControls.Goat.Brace.canceled += OnBraceReleased; // Listen for button release too
-    }
-
-    // OnDisable is called when the object becomes disabled or inactive
-    private void OnDisable()
-    {
-        // Stop listening for actions to avoid errors
-        playerControls.Goat.Disable();
     }
 
     private void Update()
     {
         // Ground check (make sure groundCheck is set in the Inspector)
         if (groundCheck != null)
+<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
         {
             // combine ground + other goat masks and check against both
             int combinedMask = groundLayer.value | goatLayer.value;
             isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, combinedMask, QueryTriggerInteraction.Ignore);
         }
+=======
+            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayers, QueryTriggerInteraction.Ignore);
+>>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
 
         // Smoothly return to z=0 when not dodging
         if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
@@ -95,7 +76,6 @@ public class PlayerGoatController : MonoBehaviour
             pos.z = Mathf.Lerp(pos.z, 9f, Time.deltaTime * dodgeReturnSpeed);
             transform.position = pos;
         }
-
     }
 
     // FixedUpdate is called on a fixed time step, ideal for physics calculations
@@ -104,6 +84,7 @@ public class PlayerGoatController : MonoBehaviour
         // Create a 3D movement vector from our 2D input
         Vector3 move = new(moveDirection.x, moveDirection.y, 0);
 
+<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
 
         // If jumping, lock x-axis movement but keep the momentum from jump start
         if (!isGrounded)
@@ -115,22 +96,20 @@ public class PlayerGoatController : MonoBehaviour
             // Apply the movement to the Rigidbody
             rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
         }
+=======
+        // Apply the movement to the Rigidbody
+        rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
+>>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
     }
 
-    // --- Methods that are CALLED BY the Input System ---
-
-    private void OnDodge(InputAction.CallbackContext context)
-    {
-        Debug.Log("Dodge Action Triggered!");
-
-        if (!isDodging)
-        {
-            StartCoroutine(DodgeAnimation());
-        }
+    // Public interface for actions
+    public void Move(Vector2 direction) 
+    { 
+        moveDirection = direction;
     }
 
-    private void OnAttack(InputAction.CallbackContext context)
-    {
+    public void Attack() 
+    { 
         Debug.Log("Charge Action Triggered!");
 
         // Don't charge if already charging
@@ -140,10 +119,11 @@ public class PlayerGoatController : MonoBehaviour
         }
     }
 
-    private void OnJump(InputAction.CallbackContext context)
-    {
-        Debug.Log("Jump Action Triggered!");
+    public void Dodge(Vector2 direction) 
+    { 
+        Debug.Log("Dodge Action Triggered!");
 
+<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
         TryJump();
 
     }
@@ -167,19 +147,49 @@ public class PlayerGoatController : MonoBehaviour
 
     private void TryJump()
     {
+=======
+        if (!isDodging)
+        {
+            StartCoroutine(DodgeAnimation());
+        }
+    }
+
+    public void Brace(bool shouldBrace) 
+    { 
+        if (shouldBrace)
+        {
+            Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
+            rb.mass = originalMass * braceMassMultiplier;
+            isBraced = true;
+        }
+        else
+        {
+            Debug.Log("Brace Released! Mass reset to: " + originalMass);
+            rb.mass = originalMass;
+            isBraced = false;
+        }
+    }
+
+    public void Jump() 
+    { 
+>>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
         if (!isGrounded || isCharging) return;
 
         jumpStartXVelocity = rb.linearVelocity.x; // Capture current x-velocity
 
         // Reset vertical velocity so jumps are snappy
         Vector3 v = rb.linearVelocity;
-        // v.y = 0f;
         rb.linearVelocity = v;
 
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         // isJumping = true; // Set jumping flag
     }
-
+    
+    // Getters for AI observations
+    public bool IsGrounded => isGrounded;
+    public bool IsCharging => isCharging;
+    public bool IsBraced => isBraced;
+    public bool IsDodging => isDodging;
 
     private System.Collections.IEnumerator ChargeAttack()
     {
@@ -196,7 +206,6 @@ public class PlayerGoatController : MonoBehaviour
 
         isCharging = false;
     }
-
 
     private System.Collections.IEnumerator DodgeAnimation()
     {
@@ -226,7 +235,4 @@ public class PlayerGoatController : MonoBehaviour
         isDodging = false;
         // The Update method will handle returning to z=0
     }
-
-
-
 }
