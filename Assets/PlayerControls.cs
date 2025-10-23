@@ -127,6 +127,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Jump"",
+                    ""type"": ""Button"",
+                    ""id"": ""83cb4bcd-ef7d-4d2f-a4a5-712c3e9c90a7"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -162,28 +171,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Move"",
                     ""isComposite"": true,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""up"",
-                    ""id"": ""fcfc7e47-a469-4762-95d8-ae7b4da7d431"",
-                    ""path"": ""<Keyboard>/w"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""down"",
-                    ""id"": ""6c8b33de-513c-4cfc-bd84-b805eb1875ec"",
-                    ""path"": ""<Keyboard>/s"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Move"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
                 },
                 {
                     ""name"": ""left"",
@@ -239,6 +226,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Brace"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2973cf84-6a78-45cc-8a28-694fc55dd075"",
+                    ""path"": ""<Keyboard>/w"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Jump"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -251,6 +249,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Goat_Dodge = m_Goat.FindAction("Dodge", throwIfNotFound: true);
         m_Goat_Attack = m_Goat.FindAction("Attack", throwIfNotFound: true);
         m_Goat_Brace = m_Goat.FindAction("Brace", throwIfNotFound: true);
+        m_Goat_Jump = m_Goat.FindAction("Jump", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -335,6 +334,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Goat_Dodge;
     private readonly InputAction m_Goat_Attack;
     private readonly InputAction m_Goat_Brace;
+    private readonly InputAction m_Goat_Jump;
     /// <summary>
     /// Provides access to input actions defined in input action map "Goat".
     /// </summary>
@@ -362,6 +362,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Goat/Brace".
         /// </summary>
         public InputAction @Brace => m_Wrapper.m_Goat_Brace;
+        /// <summary>
+        /// Provides access to the underlying input action "Goat/Jump".
+        /// </summary>
+        public InputAction @Jump => m_Wrapper.m_Goat_Jump;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -400,6 +404,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Brace.started += instance.OnBrace;
             @Brace.performed += instance.OnBrace;
             @Brace.canceled += instance.OnBrace;
+            @Jump.started += instance.OnJump;
+            @Jump.performed += instance.OnJump;
+            @Jump.canceled += instance.OnJump;
         }
 
         /// <summary>
@@ -423,6 +430,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Brace.started -= instance.OnBrace;
             @Brace.performed -= instance.OnBrace;
             @Brace.canceled -= instance.OnBrace;
+            @Jump.started -= instance.OnJump;
+            @Jump.performed -= instance.OnJump;
+            @Jump.canceled -= instance.OnJump;
         }
 
         /// <summary>
@@ -491,5 +501,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnBrace(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Jump" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnJump(InputAction.CallbackContext context);
     }
 }

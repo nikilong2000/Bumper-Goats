@@ -36,12 +36,10 @@ public class PlayerGoatController : MonoBehaviour
     private Rigidbody rb;
     private PlayerControls playerControls; // This will hold a reference to our Input Actions
     private Vector2 moveDirection;
+    private float originalMass;
     private bool isCharging = false;
     private bool isGrounded = false;
-    private float originalMass;
-
     private bool isDodging = false;
-    private float targetZPosition = 9f;
 
 
 
@@ -64,6 +62,7 @@ public class PlayerGoatController : MonoBehaviour
         // For button press actions (performed when the button is pressed down)
         playerControls.Goat.Dodge.performed += OnDodge;
         playerControls.Goat.Attack.performed += OnAttack;
+        playerControls.Goat.Jump.performed += OnJump;
         playerControls.Goat.Brace.performed += OnBrace;
         playerControls.Goat.Brace.canceled += OnBraceReleased; // Listen for button release too
     }
@@ -77,16 +76,6 @@ public class PlayerGoatController : MonoBehaviour
 
     private void Update()
     {
-        // Ground check (make sure groundCheck is set in the Inspector)
-        if (groundCheck != null)
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayers, QueryTriggerInteraction.Ignore);
-
-        // Jump on W press (new Input System keyboard)
-        if (Keyboard.current != null && Keyboard.current.wKey.wasPressedThisFrame)
-        {
-            TryJump();
-        }
-
         // Smoothly return to z=0 when not dodging
         if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
         {
@@ -130,6 +119,19 @@ public class PlayerGoatController : MonoBehaviour
         {
             StartCoroutine(ChargeAttack());
         }
+    }
+
+    private void OnJump(InputAction.CallbackContext context)
+    {
+        Debug.Log("Jump Action Triggered!");
+
+        // Ground check (make sure groundCheck is set in the Inspector)
+        if (groundCheck != null)
+        {
+            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayers, QueryTriggerInteraction.Ignore);
+            TryJump();
+        }
+
     }
 
 

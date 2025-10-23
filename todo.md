@@ -3,6 +3,8 @@
 ## First Priority TODOs
 
 - [x] Implement dodging
+- [ ] Implement shrinking arena
+- [ ] Adjust PlayerGoatController.cs to move based on direction of the goat (facing which direction?)
 - [ ] Implement ML agent moving (for now)
   - [ ] Define Observations and actions
 - [ ] Create HUD for Cooldown/Stamina
