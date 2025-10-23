@@ -426,6 +426,7 @@ GameObject:
   - component: {fileID: 440613391}
   - component: {fileID: 440613390}
   - component: {fileID: 440613392}
+  - component: {fileID: 440613393}
   m_Layer: 0
   m_Name: GoatPlayer
   m_TagString: Player
@@ -515,20 +516,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8f96831e119745f283c6681a867b163, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
-  sidestepForce: 10
-  chargeForce: 30
-  chargeDuration: 0.7
-  jumpForce: 6
-  groundCheck: {fileID: 283941003}
-  groundCheckRadius: 0.25
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  braceMassMultiplier: 3
-  dodgeDistance: 1.4
-  dodgeDuration: 0.3
-  dodgeReturnSpeed: 5
 --- !u!54 &440613391
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -577,6 +564,35 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0.1, y: 0, z: 0}
+--- !u!114 &440613393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 440613385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 049c1956ca97d4318aed0f321d481199, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 5
+  sidestepForce: 10
+  chargeForce: 30
+  chargeDuration: 0.7
+  jumpForce: 6
+  groundCheck: {fileID: 283941003}
+  groundCheckRadius: 0.25
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  goatLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  braceMassMultiplier: 3
+  dodgeDistance: 1.4
+  dodgeDuration: 0.3
+  dodgeReturnSpeed: 5
 --- !u!1001 &556075997
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -634,11 +650,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b9ce8f513172a487e88bd74c6b4dc6bc, type: 3}
---- !u!4 &561480126 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3994293088786367827, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
-  m_PrefabInstance: {fileID: 1722938401}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &582982776
 GameObject:
   m_ObjectHideFlags: 0
@@ -1181,7 +1192,11 @@ GameObject:
   - component: {fileID: 1316124917}
   - component: {fileID: 1316124920}
   - component: {fileID: 1316124921}
-  - component: {fileID: 1316124922}
+  - component: {fileID: 1316124923}
+  - component: {fileID: 1316124924}
+  - component: {fileID: 1316124925}
+  - component: {fileID: 1316124926}
+  - component: {fileID: 1316124927}
   m_Layer: 7
   m_Name: GoatAI
   m_TagString: AI
@@ -1302,31 +1317,6 @@ MonoBehaviour:
   isBraced: 1
   appearance: {fileID: 1316124917}
   someMaterial: {fileID: 2100000, guid: 8a5ad964287684d5eb58bcba19aa60b7, type: 2}
---- !u!1 &1490141255 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6701006173359823049, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
-  m_PrefabInstance: {fileID: 766646247}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1316124915}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 049c1956ca97d4318aed0f321d481199, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 5
-  sidestepForce: 10
-  chargeForce: 30
-  chargeDuration: 0.7
-  jumpForce: 6
-  groundCheck: {fileID: 283941003}
-  groundCheckRadius: 0.25
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  braceMassMultiplier: 3
-  dodgeDistance: 1.4
-  dodgeDuration: 0.3
-  dodgeReturnSpeed: 5
 --- !u!114 &1316124923
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1343,8 +1333,8 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
-  opponentTransform: {fileID: 440613389}
-  platformTransform: {fileID: 561480126}
+  opponentTransform: {fileID: 0}
+  platformTransform: {fileID: 0}
   platformRadius: 7.5
 --- !u!114 &1316124924
 MonoBehaviour:
@@ -1406,6 +1396,27 @@ MonoBehaviour:
   DecisionPeriod: 1
   DecisionStep: 0
   TakeActionsBetweenDecisions: 1
+--- !u!135 &1316124927
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316124915}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.5
+  m_Center: {x: 0.1, y: 0, z: 0}
 --- !u!4 &1490141256 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3078002635957609246, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}

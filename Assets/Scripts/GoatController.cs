@@ -1,8 +1,6 @@
-<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
+
 using System;
 using Unity.VisualScripting;
-=======
->>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -39,15 +37,13 @@ public class GoatController : MonoBehaviour
     private bool isGrounded = false;
     private bool isBraced = false;
     private bool isDodging = false;
-<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
+
     // private bool isJumping = false;
     private float jumpStartXVelocity; // Store x-velocity when jump starts
 
 
 
-=======
     private Vector2 moveDirection;
->>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
 
     private void Awake()
     {
@@ -59,15 +55,12 @@ public class GoatController : MonoBehaviour
     {
         // Ground check (make sure groundCheck is set in the Inspector)
         if (groundCheck != null)
-<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
         {
             // combine ground + other goat masks and check against both
             int combinedMask = groundLayer.value | goatLayer.value;
             isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, combinedMask, QueryTriggerInteraction.Ignore);
         }
-=======
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayers, QueryTriggerInteraction.Ignore);
->>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer, QueryTriggerInteraction.Ignore);
 
         // Smoothly return to z=0 when not dodging
         if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
@@ -84,7 +77,6 @@ public class GoatController : MonoBehaviour
         // Create a 3D movement vector from our 2D input
         Vector3 move = new(moveDirection.x, moveDirection.y, 0);
 
-<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
 
         // If jumping, lock x-axis movement but keep the momentum from jump start
         if (!isGrounded)
@@ -96,20 +88,18 @@ public class GoatController : MonoBehaviour
             // Apply the movement to the Rigidbody
             rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
         }
-=======
         // Apply the movement to the Rigidbody
         rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
->>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
     }
 
     // Public interface for actions
-    public void Move(Vector2 direction) 
-    { 
+    public void Move(Vector2 direction)
+    {
         moveDirection = direction;
     }
 
-    public void Attack() 
-    { 
+    public void Attack()
+    {
         Debug.Log("Charge Action Triggered!");
 
         // Don't charge if already charging
@@ -119,11 +109,10 @@ public class GoatController : MonoBehaviour
         }
     }
 
-    public void Dodge(Vector2 direction) 
-    { 
+    public void Dodge(Vector2 direction)
+    {
         Debug.Log("Dodge Action Triggered!");
 
-<<<<<<< HEAD:Assets/Scripts/PlayerGoatController.cs
         TryJump();
 
     }
@@ -147,15 +136,14 @@ public class GoatController : MonoBehaviour
 
     private void TryJump()
     {
-=======
         if (!isDodging)
         {
             StartCoroutine(DodgeAnimation());
         }
     }
 
-    public void Brace(bool shouldBrace) 
-    { 
+    public void Brace(bool shouldBrace)
+    {
         if (shouldBrace)
         {
             Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
@@ -170,9 +158,8 @@ public class GoatController : MonoBehaviour
         }
     }
 
-    public void Jump() 
-    { 
->>>>>>> 9a00971f7ba66cb261cb505e10952fb9521bd7a7:Assets/Scripts/GoatController.cs
+    public void Jump()
+    {
         if (!isGrounded || isCharging) return;
 
         jumpStartXVelocity = rb.linearVelocity.x; // Capture current x-velocity
@@ -184,7 +171,7 @@ public class GoatController : MonoBehaviour
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         // isJumping = true; // Set jumping flag
     }
-    
+
     // Getters for AI observations
     public bool IsGrounded => isGrounded;
     public bool IsCharging => isCharging;
