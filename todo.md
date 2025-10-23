@@ -3,7 +3,9 @@
 ## First Priority TODOs
 
 - [x] Implement dodging
+- [x] No movement during bracing and dodging and jumping
 - [ ] Implement shrinking arena
+- [ ] Put inspector values in code
 - [ ] Adjust PlayerGoatController.cs to move based on direction of the goat (facing which direction?)
 - [ ] Implement ML agent moving (for now)
   - [ ] Define Observations and actions

@@ -16,11 +16,11 @@ public class PlayerAnimation : MonoBehaviour
         {
             bool isRunningForward = Input.GetKey(KeyCode.D);
             bool isRunningBackward = Input.GetKey(KeyCode.A);
-            bool isBracing = Input.GetKey(KeyCode.LeftControl);
+            bool isBracing = Input.GetKey(KeyCode.S);
 
             bool doAttack = Input.GetKeyDown(KeyCode.Space);
             bool doJump = Input.GetKeyDown(KeyCode.W);
-            bool doSpinLeft = Input.GetKeyDown(KeyCode.LeftShift);
+            bool doSpinLeft = Input.GetKeyDown(KeyCode.Q);
 
             // mAnimator.SetBool("IsJumping", isJumping)   ;
             mAnimator.SetBool("IsRunningForward", isRunningForward);

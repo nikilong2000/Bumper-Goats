@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,7 +19,8 @@ public class PlayerGoatController : MonoBehaviour
     [SerializeField] private float jumpForce;
     [SerializeField] private Transform groundCheck; // empty child at goats feet
     [SerializeField] private float groundCheckRadius; // Tunable
-    [SerializeField] private LayerMask groundLayers;
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask goatLayer; // since the goat should be grounded when hitting the other goat
 
     [Header("Brace Settings")]
     [SerializeField] private float braceMassMultiplier; // how many times heavier when bracing
@@ -40,6 +42,8 @@ public class PlayerGoatController : MonoBehaviour
     private bool isCharging = false;
     private bool isGrounded = false;
     private bool isDodging = false;
+    // private bool isJumping = false;
+    private float jumpStartXVelocity; // Store x-velocity when jump starts
 
 
 
@@ -76,6 +80,14 @@ public class PlayerGoatController : MonoBehaviour
 
     private void Update()
     {
+        // Ground check (make sure groundCheck is set in the Inspector)
+        if (groundCheck != null)
+        {
+            // combine ground + other goat masks and check against both
+            int combinedMask = groundLayer.value | goatLayer.value;
+            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, combinedMask, QueryTriggerInteraction.Ignore);
+        }
+
         // Smoothly return to z=0 when not dodging
         if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
         {
@@ -90,12 +102,19 @@ public class PlayerGoatController : MonoBehaviour
     private void FixedUpdate()
     {
         // Create a 3D movement vector from our 2D input
-        // (x from moveDirection.x, y is 0, z from moveDirection.y)
         Vector3 move = new(moveDirection.x, moveDirection.y, 0);
 
-        // Apply the movement to the Rigidbody
-        rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed); // fixed: use rb.velocity
 
+        // If jumping, lock x-axis movement but keep the momentum from jump start
+        if (!isGrounded)
+        {
+            rb.linearVelocity = new Vector3(jumpStartXVelocity, rb.linearVelocity.y, move.z * moveSpeed);
+        }
+        else
+        {
+            // Apply the movement to the Rigidbody
+            rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
+        }
     }
 
     // --- Methods that are CALLED BY the Input System ---
@@ -125,12 +144,7 @@ public class PlayerGoatController : MonoBehaviour
     {
         Debug.Log("Jump Action Triggered!");
 
-        // Ground check (make sure groundCheck is set in the Inspector)
-        if (groundCheck != null)
-        {
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayers, QueryTriggerInteraction.Ignore);
-            TryJump();
-        }
+        TryJump();
 
     }
 
@@ -139,18 +153,23 @@ public class PlayerGoatController : MonoBehaviour
     {
         Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
 
+        // make goat heavier (more stable)
         rb.mass = originalMass * braceMassMultiplier;
+        rb.constraints |= RigidbodyConstraints.FreezePositionX; // hinder movement
     }
 
     private void OnBraceReleased(InputAction.CallbackContext context)
     {
         Debug.Log("Brace Released! Mass reset to: " + originalMass);
         rb.mass = originalMass;
+        rb.constraints &= ~RigidbodyConstraints.FreezePositionX; // can move again
     }
 
     private void TryJump()
     {
         if (!isGrounded || isCharging) return;
+
+        jumpStartXVelocity = rb.linearVelocity.x; // Capture current x-velocity
 
         // Reset vertical velocity so jumps are snappy
         Vector3 v = rb.linearVelocity;
@@ -158,6 +177,7 @@ public class PlayerGoatController : MonoBehaviour
         rb.linearVelocity = v;
 
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        // isJumping = true; // Set jumping flag
     }
 
 
@@ -182,9 +202,7 @@ public class PlayerGoatController : MonoBehaviour
     {
         isDodging = true;
 
-        // Determine dodge direction based on current movement or default to right
-        // float direction = moveDirection.x >= 0 ? 1f : -1f;
-
+        // dodge direction random for now (left, right)
         float direction = UnityEngine.Random.value > 0.5f ? 1f : -1f;
 
         Vector3 startPos = transform.position;
@@ -199,6 +217,7 @@ public class PlayerGoatController : MonoBehaviour
             float t = elapsed / dodgeDuration;
 
             Vector3 newPos = Vector3.Lerp(startPos, targetPos, t);
+            newPos.x = startPos.x; // Keep x-direction fixed during dodge
             transform.position = newPos;
 
             yield return null;
