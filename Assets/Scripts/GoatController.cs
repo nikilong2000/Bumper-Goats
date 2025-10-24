@@ -48,52 +48,61 @@ public class GoatController : MonoBehaviour
     private bool isBraced = false;
     private bool isDodging = false;
 
+    // Getters for AI observations
+    public bool IsGrounded => isGrounded;
+    public bool IsCharging => isCharging;
+    public bool IsBraced => isBraced;
+    public bool IsDodging => isDodging;
+
     // private bool isJumping = false;
     private float jumpStartXVelocity; // Store x-velocity when jump starts
 
-
-
     private Vector2 moveDirection;
+
+    // Store the rotations so we don't create new ones every frame
+    private Quaternion facingRight;
+    private Quaternion facingLeft;
+    private bool attackToTheRight = true;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         originalMass = rb.mass;
 
-        // facingRight = Quaternion.Euler(0, 90, 0);
-        // facingLeft = Quaternion.Euler(0, -90, 0);
+        facingRight = Quaternion.Euler(0, 90, 0);
+        facingLeft = Quaternion.Euler(0, -90, 0);
     }
 
     private void Update()
     {
-        // float directionToOpponent = opponent.position.x - transform.position.x;
-        // if (directionToOpponent > 0)
-        // {
-        //     goatModel.rotation = facingRight;
-        //     attackToTheRight = true;
-        // }
-        // else if (directionToOpponent < 0)
-        // {
-        //     goatModel.rotation = facingLeft;
-        //     attackToTheRight = false;
-        // }
+        float directionToOpponent = opponent.position.x - transform.position.x;
+        if (directionToOpponent > 0)
+        {
+            goatModel.rotation = facingRight;
+            attackToTheRight = true;
+        }
+        else if (directionToOpponent < 0)
+        {
+            goatModel.rotation = facingLeft;
+            attackToTheRight = false;
+        }
 
-        // // Ground check (make sure groundCheck is set in the Inspector)
-        // if (groundCheck != null)
-        // {
-        //     // combine ground + other goat masks and check against both
-        //     int combinedMask = groundLayer.value | goatLayer.value;
-        //     isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, combinedMask, QueryTriggerInteraction.Ignore);
-        // }
-        // isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer, QueryTriggerInteraction.Ignore);
 
-        // // Smoothly return to z=0 when not dodging
-        // if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
-        // {
-        //     Vector3 pos = transform.position;
-        //     pos.z = Mathf.Lerp(pos.z, 9f, Time.deltaTime * dodgeReturnSpeed);
-        //     transform.position = pos;
-        // }
+        // Ground check (make sure groundCheck is set in the Inspector)
+        if (groundCheck != null)
+        {
+            // combine ground + other goat masks and check against both
+            int combinedMask = groundLayer.value | goatLayer.value;
+            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, combinedMask, QueryTriggerInteraction.Ignore);
+        }
+
+        // Smoothly return to z=9 when not dodging
+        if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
+        {
+            Vector3 pos = transform.position;
+            pos.z = Mathf.Lerp(pos.z, 9f, Time.deltaTime * dodgeReturnSpeed);
+            transform.position = pos;
+        }
     }
 
     // FixedUpdate is called on a fixed time step, ideal for physics calculations
@@ -102,17 +111,6 @@ public class GoatController : MonoBehaviour
         // Create a 3D movement vector from our 2D input
         Vector3 move = new(moveDirection.x, moveDirection.y, 0);
 
-
-        // If jumping, lock x-axis movement but keep the momentum from jump start
-        if (!isGrounded)
-        {
-            rb.linearVelocity = new Vector3(jumpStartXVelocity, rb.linearVelocity.y, move.z * moveSpeed);
-        }
-        else
-        {
-            // Apply the movement to the Rigidbody
-            rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
-        }
         // Apply the movement to the Rigidbody
         rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
     }
@@ -138,29 +136,6 @@ public class GoatController : MonoBehaviour
     {
         Debug.Log("Dodge Action Triggered!");
 
-        TryJump();
-
-    }
-
-
-    // private void OnBrace(InputAction.CallbackContext context)
-    // {
-    //     Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
-
-    //     // make goat heavier (more stable)
-    //     rb.mass = originalMass * braceMassMultiplier;
-    //     rb.constraints |= RigidbodyConstraints.FreezePositionX; // hinder movement
-    // }
-
-    // private void OnBraceReleased(InputAction.CallbackContext context)
-    // {
-    //     Debug.Log("Brace Released! Mass reset to: " + originalMass);
-    //     rb.mass = originalMass;
-    //     rb.constraints &= ~RigidbodyConstraints.FreezePositionX; // can move again
-    // }
-
-    private void TryJump()
-    {
         if (!isDodging)
         {
             StartCoroutine(DodgeAnimation());
@@ -187,34 +162,29 @@ public class GoatController : MonoBehaviour
 
     public void Jump()
     {
+        Debug.Log("Jump Action Triggered!");
+        TryJump();
+    }
+
+    private void TryJump()
+    {
         if (!isGrounded || isCharging) return;
-
-        jumpStartXVelocity = rb.linearVelocity.x; // Capture current x-velocity
-
         // Reset vertical velocity so jumps are snappy
         Vector3 v = rb.linearVelocity;
+        // v.y = 0f;
         rb.linearVelocity = v;
 
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        // isJumping = true; // Set jumping flag
     }
-
-    // Getters for AI observations
-    public bool IsGrounded => isGrounded;
-    public bool IsCharging => isCharging;
-    public bool IsBraced => isBraced;
-    public bool IsDodging => isDodging;
 
     private System.Collections.IEnumerator ChargeAttack()
     {
         isCharging = true;
-
-        // float attackDirection = attackToTheRight ? 1f : -1f;
+        float attackDirection = attackToTheRight ? 1f : -1f;
 
         // Apply a strong forward force to the right (where opponent is)
-        rb.AddForce(transform.right * chargeForce, ForceMode.Impulse);
-        // rb.AddForce(transform.right * attackDirection * chargeForce, ForceMode.Impulse);
-
+        // rb.AddForce(transform.right * chargeForce, ForceMode.Impulse);
+        rb.AddForce(transform.right * attackDirection * chargeForce, ForceMode.Impulse);
         // Wait for the charge duration
         yield return new WaitForSeconds(chargeDuration);
 

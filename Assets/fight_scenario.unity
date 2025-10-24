@@ -512,7 +512,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 440613385}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8f96831e119745f283c6681a867b163, type: 3}
   m_Name: 
@@ -572,7 +572,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 440613385}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 049c1956ca97d4318aed0f321d481199, type: 3}
   m_Name: 
@@ -603,7 +603,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 440613385}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc8521dae9d7a43b992729a650ae1425, type: 3}
   m_Name: 
@@ -937,6 +937,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
+--- !u!4 &793934034 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4791827234011756184, guid: 4135e63fbcb2244289c92d884ac9182f, type: 3}
+  m_PrefabInstance: {fileID: 1722938401}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &961739749
 GameObject:
   m_ObjectHideFlags: 0
@@ -1231,6 +1236,7 @@ GameObject:
   - component: {fileID: 1316124925}
   - component: {fileID: 1316124926}
   - component: {fileID: 1316124927}
+  - component: {fileID: 1316124928}
   m_Layer: 7
   m_Name: GoatAI
   m_TagString: AI
@@ -1358,7 +1364,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316124915}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2675829237ac94dd285d1ba3839731bb, type: 3}
   m_Name: 
@@ -1367,8 +1373,8 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
-  opponentTransform: {fileID: 0}
-  platformTransform: {fileID: 0}
+  opponentTransform: {fileID: 440613389}
+  platformTransform: {fileID: 793934034}
   platformRadius: 7.5
 --- !u!114 &1316124924
 MonoBehaviour:
@@ -1377,7 +1383,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316124915}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5d1c4e0b1822b495aa52bc52839ecb30, type: 3}
   m_Name: 
@@ -1386,7 +1392,7 @@ MonoBehaviour:
     VectorObservationSize: 23
     NumStackedVectorObservations: 1
     m_ActionSpec:
-      m_NumContinuousActions: 2
+      m_NumContinuousActions: 1
       BranchSizes: 05000000
     VectorActionSize: 
     VectorActionDescriptions: []
@@ -1408,7 +1414,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316124915}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: da1436ad7a27c48fe9ae0b6588b3b128, type: 3}
   m_Name: 
@@ -1422,7 +1428,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316124915}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
   m_Name: 
@@ -1451,6 +1457,37 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0.1, y: 0, z: 0}
+--- !u!114 &1316124928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1316124915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 049c1956ca97d4318aed0f321d481199, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 5
+  sidestepForce: 10
+  chargeForce: 30
+  chargeDuration: 0.7
+  jumpForce: 6
+  groundCheck: {fileID: 0}
+  groundCheckRadius: 0.25
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  goatLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  braceMassMultiplier: 3
+  dodgeDistance: 1.4
+  dodgeDuration: 0.3
+  dodgeReturnSpeed: 5
+  opponent: {fileID: 440613389}
+  goatModel: {fileID: 1490141256}
 --- !u!4 &1490141256 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3078002635957609246, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}

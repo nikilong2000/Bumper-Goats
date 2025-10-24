@@ -154,10 +154,9 @@ public class AiGoatScript : Agent
         // --- Continuous Actions: Movement (2 actions) ---
         // Range: -1 to +1 for each axis
         float moveX = actions.ContinuousActions[0];
-        float moveZ = actions.ContinuousActions[1];
 
         // Use GoatController for movement
-        Vector2 moveDirection = new Vector2(moveX, moveZ);
+        Vector2 moveDirection = new Vector2(moveX, 0f);
         goatController.Move(moveDirection);
 
         // --- Discrete Actions: Combat Actions (4 actions) ---
@@ -216,7 +215,6 @@ public class AiGoatScript : Agent
 
         // Use arrow keys or WASD to control movement
         continuousActions[0] = Input.GetAxisRaw("Horizontal"); // A/D or Left/Right
-        continuousActions[1] = Input.GetAxisRaw("Vertical");   // W/S or Up/Down
 
         // Use number keys for combat actions
         if (Input.GetKey(KeyCode.Alpha1)) discreteActions[0] = 1; // Attack
