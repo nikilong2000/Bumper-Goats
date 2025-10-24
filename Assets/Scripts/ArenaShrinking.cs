@@ -5,8 +5,8 @@ public class ArenaShrinking : MonoBehaviour
     private GameObject arenaObject;
     public static ArenaShrinking Instance { get; private set; }
 
-    public float reduceSpeed = 5.0f;
-    public float gracePeriod = 1.0f;
+    public float reduceSpeed = 0.3f;
+    public float gracePeriod = 10.0f;
     private float timer = 0.0f;
     private Vector3 initialScale;
     private Vector3 minScale = new Vector3(5.0f, 1.0f, 5.0f);
