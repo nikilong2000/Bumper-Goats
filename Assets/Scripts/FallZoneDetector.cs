@@ -47,6 +47,9 @@ public class FallZoneDetector : MonoBehaviour
                 }
             }
         }
+
+        // Reset arena size
+        ArenaShrinking.Instance.ResetArenaSize();
     }
 
     private void Respawn(Rigidbody rb, Transform target)
