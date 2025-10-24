@@ -8,31 +8,41 @@ using UnityEngine.InputSystem;
 public class GoatController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed;
-    [SerializeField] private float sidestepForce;
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float sidestepForce = 10f;
 
     [Header("Attack Settings")]
-    [SerializeField] private float chargeForce;
-    [SerializeField] private float chargeDuration; // change later only for testing
+    [SerializeField] private float chargeForce = 30f;
+    [SerializeField] private float chargeDuration = 0.7f; // change later only for testing
 
     [Header("Jump Settings")]
-    [SerializeField] private float jumpForce;
+    [SerializeField] private float jumpForce = 6f;
     [SerializeField] private Transform groundCheck; // empty child at goats feet
-    [SerializeField] private float groundCheckRadius; // Tunable
+    [SerializeField] private float groundCheckRadius = 0.25f; // Tunable
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask goatLayer; // since the goat should be grounded when hitting the other goat
 
     [Header("Brace Settings")]
-    [SerializeField] private float braceMassMultiplier; // how many times heavier when bracing
+    [SerializeField] private float braceMassMultiplier = 3f; // how many times heavier when bracing
 
     [Header("Dodge Settings")]
-    [SerializeField] private float dodgeDistance = 2f; // How far to shift on z-axis
+    [SerializeField] private float dodgeDistance = 1.4f; // How far to shift on z-axis
     [SerializeField] private float dodgeDuration = 0.3f; // How long the dodge animation takes
     [SerializeField] private float dodgeReturnSpeed = 5f; // How fast to return to z=0
+
+    [Header("Directional Settings")]
+    // --- Visual & Flipping Vars ---
+    [SerializeField] private Transform opponent; // Drag the opponent goat here in the Inspector
+    [SerializeField] private Transform goatModel; // Drag the child object with the renderer here
+
+    // // Store the rotations so we don't create new ones every frame
+    // private Quaternion facingRight;
+    // private Quaternion facingLeft;
 
     // Internal state
     private Rigidbody rb;
     private float originalMass;
+    // private bool attackToTheRight = true;
     private bool isCharging = false;
     private bool isGrounded = false;
     private bool isBraced = false;
@@ -49,26 +59,41 @@ public class GoatController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         originalMass = rb.mass;
+
+        // facingRight = Quaternion.Euler(0, 90, 0);
+        // facingLeft = Quaternion.Euler(0, -90, 0);
     }
 
     private void Update()
     {
-        // Ground check (make sure groundCheck is set in the Inspector)
-        if (groundCheck != null)
-        {
-            // combine ground + other goat masks and check against both
-            int combinedMask = groundLayer.value | goatLayer.value;
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, combinedMask, QueryTriggerInteraction.Ignore);
-        }
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer, QueryTriggerInteraction.Ignore);
+        // float directionToOpponent = opponent.position.x - transform.position.x;
+        // if (directionToOpponent > 0)
+        // {
+        //     goatModel.rotation = facingRight;
+        //     attackToTheRight = true;
+        // }
+        // else if (directionToOpponent < 0)
+        // {
+        //     goatModel.rotation = facingLeft;
+        //     attackToTheRight = false;
+        // }
 
-        // Smoothly return to z=0 when not dodging
-        if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
-        {
-            Vector3 pos = transform.position;
-            pos.z = Mathf.Lerp(pos.z, 9f, Time.deltaTime * dodgeReturnSpeed);
-            transform.position = pos;
-        }
+        // // Ground check (make sure groundCheck is set in the Inspector)
+        // if (groundCheck != null)
+        // {
+        //     // combine ground + other goat masks and check against both
+        //     int combinedMask = groundLayer.value | goatLayer.value;
+        //     isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, combinedMask, QueryTriggerInteraction.Ignore);
+        // }
+        // isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer, QueryTriggerInteraction.Ignore);
+
+        // // Smoothly return to z=0 when not dodging
+        // if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
+        // {
+        //     Vector3 pos = transform.position;
+        //     pos.z = Mathf.Lerp(pos.z, 9f, Time.deltaTime * dodgeReturnSpeed);
+        //     transform.position = pos;
+        // }
     }
 
     // FixedUpdate is called on a fixed time step, ideal for physics calculations
@@ -118,21 +143,21 @@ public class GoatController : MonoBehaviour
     }
 
 
-    private void OnBrace(InputAction.CallbackContext context)
-    {
-        Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
+    // private void OnBrace(InputAction.CallbackContext context)
+    // {
+    //     Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
 
-        // make goat heavier (more stable)
-        rb.mass = originalMass * braceMassMultiplier;
-        rb.constraints |= RigidbodyConstraints.FreezePositionX; // hinder movement
-    }
+    //     // make goat heavier (more stable)
+    //     rb.mass = originalMass * braceMassMultiplier;
+    //     rb.constraints |= RigidbodyConstraints.FreezePositionX; // hinder movement
+    // }
 
-    private void OnBraceReleased(InputAction.CallbackContext context)
-    {
-        Debug.Log("Brace Released! Mass reset to: " + originalMass);
-        rb.mass = originalMass;
-        rb.constraints &= ~RigidbodyConstraints.FreezePositionX; // can move again
-    }
+    // private void OnBraceReleased(InputAction.CallbackContext context)
+    // {
+    //     Debug.Log("Brace Released! Mass reset to: " + originalMass);
+    //     rb.mass = originalMass;
+    //     rb.constraints &= ~RigidbodyConstraints.FreezePositionX; // can move again
+    // }
 
     private void TryJump()
     {
@@ -147,14 +172,16 @@ public class GoatController : MonoBehaviour
         if (shouldBrace)
         {
             Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
+
+            // make goat heavier (more stable)
             rb.mass = originalMass * braceMassMultiplier;
-            isBraced = true;
+            rb.constraints |= RigidbodyConstraints.FreezePositionX; // hinder movement
         }
         else
         {
             Debug.Log("Brace Released! Mass reset to: " + originalMass);
             rb.mass = originalMass;
-            isBraced = false;
+            rb.constraints &= ~RigidbodyConstraints.FreezePositionX; // can move again
         }
     }
 
@@ -182,8 +209,11 @@ public class GoatController : MonoBehaviour
     {
         isCharging = true;
 
+        // float attackDirection = attackToTheRight ? 1f : -1f;
+
         // Apply a strong forward force to the right (where opponent is)
         rb.AddForce(transform.right * chargeForce, ForceMode.Impulse);
+        // rb.AddForce(transform.right * attackDirection * chargeForce, ForceMode.Impulse);
 
         // Wait for the charge duration
         yield return new WaitForSeconds(chargeDuration);
