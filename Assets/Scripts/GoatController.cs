@@ -3,6 +3,7 @@ using System;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class GoatController : MonoBehaviour
@@ -39,6 +40,15 @@ public class GoatController : MonoBehaviour
     // private Quaternion facingRight;
     // private Quaternion facingLeft;
 
+    [Header("Stamina Settings")]
+    public Image staminaBar;
+    public float currentStamina;
+    private float maxStamina = 100f;
+    public float staminaRegenRate;
+    private float dodgeStaminaCost = 10f;
+    private float chargeStaminaCost = 20f; 
+    private float jumpStaminaCost = 5f;
+
     // Internal state
     private Rigidbody rb;
     private float originalMass;
@@ -63,6 +73,15 @@ public class GoatController : MonoBehaviour
     private Quaternion facingRight;
     private Quaternion facingLeft;
     private bool attackToTheRight = true;
+
+
+    // --- Jump queue/lock ---
+    private bool jumpRequested = false;
+    private bool jumpUsedThisGround = false;
+
+    [SerializeField] private float jumpCooldown = 0.05f;
+    private float jumpCooldownTimer = 0f;
+    
 
     private void Awake()
     {
@@ -96,6 +115,13 @@ public class GoatController : MonoBehaviour
             isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, combinedMask, QueryTriggerInteraction.Ignore);
         }
 
+        // Reset jump lock when grounded
+        if (isGrounded) jumpUsedThisGround = false;
+
+        // Cooldown timer
+        if (jumpCooldownTimer > 0f)
+            jumpCooldownTimer -= Time.deltaTime;
+
         // Smoothly return to z=9 when not dodging
         if (!isDodging && (transform.position.z) > 9.01f || transform.position.z < 8.99f)
         {
@@ -110,9 +136,9 @@ public class GoatController : MonoBehaviour
     {
         // Create a 3D movement vector from our 2D input
         Vector3 move = new(moveDirection.x, moveDirection.y, 0);
-
-        // Apply the movement to the Rigidbody
         rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
+
+        TryProcessJump();
     }
 
     // Public interface for actions
@@ -125,8 +151,8 @@ public class GoatController : MonoBehaviour
     {
         Debug.Log("Charge Action Triggered!");
 
-        // Don't charge if already charging
-        if (!isCharging)
+        // Don't charge if already charging or stamina does not allow it
+        if (!isCharging && (currentStamina >= chargeStaminaCost) && (currentStamina > 0))
         {
             StartCoroutine(ChargeAttack());
         }
@@ -136,7 +162,8 @@ public class GoatController : MonoBehaviour
     {
         Debug.Log("Dodge Action Triggered!");
 
-        if (!isDodging)
+        // Don't dodge if already dodging or stamina does not allow it
+        if (!isDodging && (currentStamina >= dodgeStaminaCost) && (currentStamina > 0))
         {
             StartCoroutine(DodgeAnimation());
         }
@@ -154,7 +181,7 @@ public class GoatController : MonoBehaviour
         }
         else
         {
-            Debug.Log("Brace Released! Mass reset to: " + originalMass);
+            // Debug.Log("Brace Released! Mass reset to: " + originalMass);
             rb.mass = originalMass;
             rb.constraints &= ~RigidbodyConstraints.FreezePositionX; // can move again
         }
@@ -162,25 +189,45 @@ public class GoatController : MonoBehaviour
 
     public void Jump()
     {
-        Debug.Log("Jump Action Triggered!");
-        TryJump();
+        jumpRequested = true;
     }
 
-    private void TryJump()
+    private void TryProcessJump()
     {
-        if (!isGrounded || isCharging) return;
-        // Reset vertical velocity so jumps are snappy
+        if (!jumpRequested) return;
+        
+        // Clear request immediately to prevent it from lingering
+        jumpRequested = false;
+
+        // Check all conditions
+        if (!isGrounded || isCharging || jumpUsedThisGround) return;
+        // Check cooldown
+        if (jumpCooldownTimer > 0f) return;
+
+        if (currentStamina < jumpStaminaCost) return;
+
+        // --- Execute the jump ---
+        currentStamina -= jumpStaminaCost;
+        staminaBar.fillAmount = currentStamina / maxStamina;
+
         Vector3 v = rb.linearVelocity;
-        // v.y = 0f;
         rb.linearVelocity = v;
 
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+
+        jumpUsedThisGround = true;
+        jumpCooldownTimer = jumpCooldown; // Start cooldown
     }
 
     private System.Collections.IEnumerator ChargeAttack()
     {
         isCharging = true;
         float attackDirection = attackToTheRight ? 1f : -1f;
+
+        // Stamina cost for making the charge
+        Debug.Log("Charging attack, stamina cost applied.");
+        currentStamina -= chargeStaminaCost;
+        staminaBar.fillAmount = currentStamina / maxStamina;
 
         // Apply a strong forward force to the right (where opponent is)
         // rb.AddForce(transform.right * chargeForce, ForceMode.Impulse);
@@ -197,6 +244,11 @@ public class GoatController : MonoBehaviour
     private System.Collections.IEnumerator DodgeAnimation()
     {
         isDodging = true;
+
+        // Stamina cost for making the dodge
+        Debug.Log("Dodging, stamina cost applied.");
+        currentStamina -= dodgeStaminaCost;
+        staminaBar.fillAmount = currentStamina / maxStamina;
 
         // dodge direction random for now (left, right)
         float direction = UnityEngine.Random.value > 0.5f ? 1f : -1f;

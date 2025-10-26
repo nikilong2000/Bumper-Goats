@@ -20,8 +20,9 @@ public class PlayerGoatController : MonoBehaviour
         // Start listening for actions from the "Goat" action map
         playerControls.Goat.Enable();
 
-        playerControls.Goat.Move.performed += ctx => moveDirection = ctx.ReadValue<Vector2>();
-        playerControls.Goat.Move.canceled += ctx => moveDirection = Vector2.zero;
+        // Movement
+        playerControls.Goat.Move.performed += OnMove;
+        playerControls.Goat.Move.canceled  += OnMoveCanceled;
 
         // For button press actions (performed when the button is pressed down)
         playerControls.Goat.Dodge.performed += OnDodge;
@@ -34,6 +35,15 @@ public class PlayerGoatController : MonoBehaviour
     // OnDisable is called when the object becomes disabled or inactive
     private void OnDisable()
     {
+        // Unsubscribe to avoid duplicate callbacks on re-enable
+        playerControls.Goat.Move.performed  -= OnMove;
+        playerControls.Goat.Move.canceled   -= OnMoveCanceled;
+        playerControls.Goat.Dodge.performed -= OnDodge;
+        playerControls.Goat.Attack.performed -= OnAttack;
+        playerControls.Goat.Jump.performed  -= OnJump;
+        playerControls.Goat.Brace.performed -= OnBrace;
+        playerControls.Goat.Brace.canceled -= OnBraceReleased;
+        
         // Stop listening for actions to avoid errors
         playerControls.Goat.Disable();
     }
@@ -45,34 +55,15 @@ public class PlayerGoatController : MonoBehaviour
     }
 
     // --- Methods that are CALLED BY the Input System ---
+    private void OnMove(InputAction.CallbackContext context)        => moveDirection = context.ReadValue<Vector2>();
+    private void OnMoveCanceled(InputAction.CallbackContext context)  => moveDirection = Vector2.zero;
 
-    private void OnDodge(InputAction.CallbackContext context)
-    {
-        Debug.Log("Dodge Action Triggered!");
-        goatController.Dodge(moveDirection);
-    }
+    private void OnDodge(InputAction.CallbackContext context)  => goatController.Dodge(moveDirection);
+    private void OnAttack(InputAction.CallbackContext context) => goatController.Attack();
 
-    private void OnAttack(InputAction.CallbackContext context)
-    {
-        Debug.Log("Charge Action Triggered!");
-        goatController.Attack();
-    }
+    // Queue the jump (don’t jump immediately here)
+    private void OnJump(InputAction.CallbackContext context)   => goatController.Jump();
 
-    private void OnJump(InputAction.CallbackContext context)
-    {
-        Debug.Log("Jump Action Triggered!");
-        goatController.Jump();
-    }
-
-    private void OnBrace(InputAction.CallbackContext context)
-    {
-        Debug.Log("Bracing!");
-        goatController.Brace(true);
-    }
-
-    private void OnBraceReleased(InputAction.CallbackContext context)
-    {
-        Debug.Log("Brace Released!");
-        goatController.Brace(false);
-    }
+    private void OnBrace(InputAction.CallbackContext context)         => goatController.Brace(true);
+    private void OnBraceReleased(InputAction.CallbackContext context) => goatController.Brace(false);
 }
