@@ -6,12 +6,12 @@
   1. [ ] Changing directions when jumping is possible again
   2. [ ] TryJump() is starting dodge animation????
   3. [ ] Check for other weird behaviour
-- [ ] Implement shrinking arena
-- [ ] Dodge left and right on Q and E respectively and cooldown to not shift away more than once
+- [x] Implement shrinking arena
+- [x] Dodge left and right on Q and E respectively and cooldown to not shift away more than once
 - [ ] Adjust PlayerGoatController.cs to move based on direction of the goat (facing which direction?)
 - [ ] Implement ML agent moving (for now)
   - [ ] Define Observations and actions
-- [ ] Create HUD for Cooldown/Stamina
+- [x] Create HUD for Cooldown/Stamina
 
 ## Second Priority TODOs
 
