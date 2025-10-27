@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -46,8 +47,12 @@ public class GoatController : MonoBehaviour
     private float maxStamina = 100f;
     public float staminaRegenRate;
     private float dodgeStaminaCost = 10f;
-    private float chargeStaminaCost = 20f; 
+    private float chargeStaminaCost = 20f;
     private float jumpStaminaCost = 5f;
+
+    private Coroutine staminaRegenCoroutine;
+    private float staminaRechargeDelay = 2f; // Delay before stamina starts recharging
+    private float staminaRechargeRate = 15f; // Stamina points per second
 
     // Internal state
     private Rigidbody rb;
@@ -155,6 +160,11 @@ public class GoatController : MonoBehaviour
         if (!isCharging && (currentStamina >= chargeStaminaCost) && (currentStamina > 0))
         {
             StartCoroutine(ChargeAttack());
+
+            if (staminaRegenCoroutine != null)
+                StopCoroutine(staminaRegenCoroutine);
+            
+            staminaRegenCoroutine = StartCoroutine(RechargeStamina());
         }
     }
 
@@ -166,11 +176,19 @@ public class GoatController : MonoBehaviour
         if (!isDodging && (currentStamina >= dodgeStaminaCost) && (currentStamina > 0))
         {
             StartCoroutine(DodgeAnimation());
+
+            if (staminaRegenCoroutine != null)
+                StopCoroutine(staminaRegenCoroutine);
+            
+            staminaRegenCoroutine = StartCoroutine(RechargeStamina());
         }
     }
 
     public void Brace(bool shouldBrace)
     {
+        if (shouldBrace == isBraced) return;
+        isBraced = shouldBrace;
+    
         if (shouldBrace)
         {
             Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
@@ -181,7 +199,7 @@ public class GoatController : MonoBehaviour
         }
         else
         {
-            // Debug.Log("Brace Released! Mass reset to: " + originalMass);
+            Debug.Log("Brace Released! Mass reset to: " + originalMass);
             rb.mass = originalMass;
             rb.constraints &= ~RigidbodyConstraints.FreezePositionX; // can move again
         }
@@ -206,7 +224,7 @@ public class GoatController : MonoBehaviour
 
         if (currentStamina < jumpStaminaCost) return;
 
-        // --- Execute the jump ---
+        // Execute the jump 
         currentStamina -= jumpStaminaCost;
         staminaBar.fillAmount = currentStamina / maxStamina;
 
@@ -217,9 +235,14 @@ public class GoatController : MonoBehaviour
 
         jumpUsedThisGround = true;
         jumpCooldownTimer = jumpCooldown; // Start cooldown
+
+        if (staminaRegenCoroutine != null)
+            StopCoroutine(staminaRegenCoroutine);
+            
+        staminaRegenCoroutine = StartCoroutine(RechargeStamina());
     }
 
-    private System.Collections.IEnumerator ChargeAttack()
+    private IEnumerator ChargeAttack()
     {
         isCharging = true;
         float attackDirection = attackToTheRight ? 1f : -1f;
@@ -241,7 +264,7 @@ public class GoatController : MonoBehaviour
         isCharging = false;
     }
 
-    private System.Collections.IEnumerator DodgeAnimation()
+    private IEnumerator DodgeAnimation()
     {
         isDodging = true;
 
@@ -273,5 +296,22 @@ public class GoatController : MonoBehaviour
 
         isDodging = false;
         // The Update method will handle returning to z=0
+    }
+
+    private IEnumerator RechargeStamina()
+    {
+        yield return new WaitForSeconds(staminaRechargeDelay);
+
+        while (currentStamina < maxStamina)
+        {
+            currentStamina += staminaRechargeRate / 10f;
+
+            if (currentStamina > maxStamina)
+                currentStamina = maxStamina;
+
+            staminaBar.fillAmount = currentStamina / maxStamina;
+            
+            yield return new WaitForSeconds(0.1f);
+        }
     }
 }
