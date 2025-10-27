@@ -49,8 +49,11 @@ public class GoatController : MonoBehaviour
     private float dodgeStaminaCost = 10f;
     private float chargeStaminaCost = 20f;
     private float jumpStaminaCost = 5f;
+    private float braceInitialCost = 15f; // Upfront cost to activate brace
+    private float braceDrainRate = 5f; // Stamina per second while bracing
 
     private Coroutine staminaRegenCoroutine;
+    private Coroutine braceDrainCoroutine;
     private float staminaRechargeDelay = 2f; // Delay before stamina starts recharging
     private float staminaRechargeRate = 15f; // Stamina points per second
 
@@ -187,21 +190,48 @@ public class GoatController : MonoBehaviour
     public void Brace(bool shouldBrace)
     {
         if (shouldBrace == isBraced) return;
+        
+        // If trying to brace but not enough stamina, prevent it
+        if (shouldBrace && currentStamina < braceInitialCost)
+        {
+            Debug.Log("Not enough stamina to brace!");
+            return;
+        }
+        
         isBraced = shouldBrace;
     
         if (shouldBrace)
         {
             Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
 
+            // Deduct initial stamina cost
+            currentStamina -= braceInitialCost;
+            staminaBar.fillAmount = currentStamina / maxStamina;
+
             // make goat heavier (more stable)
             rb.mass = originalMass * braceMassMultiplier;
             rb.constraints |= RigidbodyConstraints.FreezePositionX; // hinder movement
+
+            // Stop stamina regen and start draining
+            if (staminaRegenCoroutine != null)
+                StopCoroutine(staminaRegenCoroutine);
+            
+            braceDrainCoroutine = StartCoroutine(DrainStaminaWhileBracing());
         }
         else
         {
             Debug.Log("Brace Released! Mass reset to: " + originalMass);
             rb.mass = originalMass;
             rb.constraints &= ~RigidbodyConstraints.FreezePositionX; // can move again
+
+            // Stop draining and start regen
+            if (braceDrainCoroutine != null)
+                StopCoroutine(braceDrainCoroutine);
+            
+            if (staminaRegenCoroutine != null)
+                StopCoroutine(staminaRegenCoroutine);
+                
+            staminaRegenCoroutine = StartCoroutine(RechargeStamina());
         }
     }
 
@@ -308,6 +338,25 @@ public class GoatController : MonoBehaviour
 
             if (currentStamina > maxStamina)
                 currentStamina = maxStamina;
+
+            staminaBar.fillAmount = currentStamina / maxStamina;
+            
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    private IEnumerator DrainStaminaWhileBracing()
+    {
+        while (isBraced && currentStamina > 0)
+        {
+            currentStamina -= braceDrainRate / 10f;
+
+            if (currentStamina <= 0)
+            {
+                currentStamina = 0;
+                // Force release brace when stamina runs out
+                Brace(false);
+            }
 
             staminaBar.fillAmount = currentStamina / maxStamina;
             
