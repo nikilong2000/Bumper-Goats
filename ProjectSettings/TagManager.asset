@@ -6,6 +6,7 @@ TagManager:
   tags:
   - AI
   - Platform
+  - Stamina
   layers:
   - Default
   - TransparentFX
