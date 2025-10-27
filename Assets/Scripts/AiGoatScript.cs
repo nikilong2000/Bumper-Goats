@@ -22,6 +22,9 @@ public class AiGoatScript : Agent
     private Vector3 startPosition;
     private Vector3 opponentStartPosition;
 
+    // Agent field
+    private bool _aiBracing = false;
+
     /// <summary>
     /// Called once when the agent is first initialized
     /// </summary>
@@ -162,26 +165,28 @@ public class AiGoatScript : Agent
         // --- Discrete Actions: Combat Actions (4 actions) ---
         // 0: No action, 1: Attack, 2: Dodge, 3: Jump, 4: Brace
         int actionType = actions.DiscreteActions[0];
+
+        bool wantBrace = _aiBracing;
         
         switch (actionType)
         {
-            case 1: // Attack
-                goatController.Attack();
-                break;
-            case 2: // Dodge
-                goatController.Dodge(moveDirection);
-                break;
-            case 3: // Jump
-                goatController.Jump();
-                break;
-            case 4: // Brace
-                goatController.Brace(true);
-                break;
-            default: // No action or 0
-                goatController.Brace(false);
-                break;
+            case 1: goatController.Attack(); break;
+            case 2: goatController.Dodge(moveDirection); break;
+            case 3: goatController.Jump(); break;
+            case 4: wantBrace = true; break;   // request brace
+            case 0: break;         
+            default: break;
         }
 
+        if (actionType != 4) wantBrace = false;
+
+        // Apply only on transition
+        if (wantBrace != _aiBracing)
+        {
+            goatController.Brace(wantBrace);
+            _aiBracing = wantBrace;
+        }
+    
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
         AddReward(-0.001f);
