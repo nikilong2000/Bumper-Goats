@@ -1089,6 +1089,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4427603528907000781, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
+      propertyPath: opponent
+      value: 
+      objectReference: {fileID: 2062395499908065152}
+    - target: {fileID: 4427603528907000781, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
+      propertyPath: goatModel
+      value: 
+      objectReference: {fileID: 1490141256}
     - target: {fileID: 6701006173359823049, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
       propertyPath: m_Name
       value: GoatOpponent
@@ -2232,6 +2240,18 @@ PrefabInstance:
       propertyPath: m_IsTrigger
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4427603528907000781, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
+      propertyPath: opponent
+      value: 
+      objectReference: {fileID: 1490141256}
+    - target: {fileID: 4427603528907000781, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
+      propertyPath: goatModel
+      value: 
+      objectReference: {fileID: 2062395499908065152}
+    - target: {fileID: 4427603528907000781, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
+      propertyPath: staminaBar
+      value: 
+      objectReference: {fileID: 266749809}
     - target: {fileID: 4608150251349963836, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
       propertyPath: m_Layer
       value: 0
