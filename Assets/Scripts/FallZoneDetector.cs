@@ -39,11 +39,16 @@ public class FallZoneDetector : MonoBehaviour
             GameObject aiGo = GameObject.FindWithTag(aiTag);
             if (aiGo != null && aiRespawnPoint != null)
             {
-                // Get the Rigidbody and respawn the AI
+                // Get the Rigidbody and respawn the AI + reset stamina
                 Rigidbody aiRb = aiGo.GetComponent<Rigidbody>();
+                GoatController playerController = playerGo.GetComponent<GoatController>();
                 if (aiRb != null)
                 {
                     Respawn(aiRb, aiRespawnPoint);
+                    if (playerController != null)
+                    {
+                        ResetStamina(playerController);
+                    }
                 }
             }
         }
@@ -61,5 +66,11 @@ public class FallZoneDetector : MonoBehaviour
         // Teleport to target (position + rotation)
         rb.position = target.position;
         rb.rotation = target.rotation;
+    }
+
+    private void ResetStamina(GoatController controller)
+    {
+        controller.currentStamina = 100f; // Reset to max stamina
+        controller.staminaBar.fillAmount = 1f; // Fill the stamina bar
     }
 }
