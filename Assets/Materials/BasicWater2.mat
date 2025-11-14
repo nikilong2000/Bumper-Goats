@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BasicWater2
-  m_Shader: {fileID: 4800000, guid: 17306c947082b1445b42c4bac253dcd0, type: 3}
+  m_Shader: {fileID: 4800000, guid: a569ab9c89ab94a708ee0b483a932c61, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -61,7 +61,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 2800000, guid: fd2670f851e6bb54a91a456ec30a7735, type: 3}
-        m_Scale: {x: 40, y: 40}
+        m_Scale: {x: 25, y: 25}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
