@@ -102,3 +102,6 @@ InitTestScene*.unity*
 .DS_Store*
 .vscode/
 results
+
+Assets/AllTateviksAssets
+AllTateviksAssets.meta
