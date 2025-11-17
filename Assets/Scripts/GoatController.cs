@@ -11,7 +11,6 @@ public class GoatController : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float sidestepForce = 10f;
 
     [Header("Attack Settings")]
     [SerializeField] private float chargeForce = 30f;

@@ -3,7 +3,7 @@ using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 
-public class AiGoatScript : Agent
+public class AiGoatScriptOld : Agent
 {
     [Header("References")]
     [SerializeField] private Transform opponentTransform;
@@ -21,9 +21,6 @@ public class AiGoatScript : Agent
     // Store initial positions for episode reset
     private Vector3 startPosition;
     private Vector3 opponentStartPosition;
-
-    private Quaternion startRotation;
-    private Quaternion opponentStartRotation;
 
     // Agent field
     private bool _aiBracing = false;
@@ -44,8 +41,6 @@ public class AiGoatScript : Agent
         // Store starting positions
         startPosition = transform.position;
         opponentStartPosition = opponentTransform.position;
-        startRotation = transform.rotation;
-        opponentStartRotation = opponentTransform.rotation;
     }
 
     /// <summary>
@@ -56,28 +51,27 @@ public class AiGoatScript : Agent
     {
         // Reset AI goat position and physics
         transform.position = startPosition;
-        transform.rotation = startRotation;
+        // transform.rotation = Quaternion.identity;
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
         // Reset opponent goat position and physics only if it's a player
-        // Temporary disabled to test self-training
-        // if (opponentTransform != null)
-        // {
-        //     // Check if the opponent is a player by looking for PlayerGoatController component
-        //     PlayerGoatController playerController = opponentTransform.GetComponent<PlayerGoatController>();
-        //     if (playerController != null) // Only reset if it's a player
-        //     {
-        //         opponentTransform.position = opponentStartPosition;
-        //         opponentTransform.rotation = opponentStartRotation;
+        if (opponentTransform != null)
+        {
+            // Check if the opponent is a player by looking for PlayerGoatController component
+            PlayerGoatController playerController = opponentTransform.GetComponent<PlayerGoatController>();
+            if (playerController != null) // Only reset if it's a player
+            {
+                opponentTransform.position = opponentStartPosition;
+                opponentTransform.rotation = Quaternion.identity;
 
-        //         if (opponentRb != null)
-        //         {
-        //             opponentRb.linearVelocity = Vector3.zero;
-        //             opponentRb.angularVelocity = Vector3.zero;
-        //         }
-        //     }
-        // }
+                if (opponentRb != null)
+                {
+                    opponentRb.linearVelocity = Vector3.zero;
+                    opponentRb.angularVelocity = Vector3.zero;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -101,7 +95,7 @@ public class AiGoatScript : Agent
         // 3. AI's distance from platform edge (1 value)
         // Critical for self-preservation
         float distanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
-        float distanceToEdge = GetPlatformRadius() - distanceFromCenter;
+        float distanceToEdge = platformRadius - distanceFromCenter;
         sensor.AddObservation(distanceToEdge / platformRadius); // Normalized 0-1
 
         // 4. AI's forward direction (2 values: x, z on ground plane)
@@ -136,40 +130,22 @@ public class AiGoatScript : Agent
                 sensor.AddObservation(Vector3.zero);
             }
 
-            // 8. Opponent's state information (4 values: isGrounded, isCharging, isBraced, isDodging)
+            // 8. Opponent's state information (3 values: isGrounded, isCharging, isBraced, isDodging)
             // Helps AI understand the opponent's current state
             sensor.AddObservation(opponentController.IsGrounded ? 1f : 0f);
             sensor.AddObservation(opponentController.IsCharging ? 1f : 0f);
             sensor.AddObservation(opponentController.IsBraced ? 1f : 0f);
             sensor.AddObservation(opponentController.IsDodging ? 1f : 0f);
-
-            // 9. Opponent's distance from platform edge (1 value)
-            // Critical for self-preservation
-            float oppDistanceFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
-            float oppDistanceToEdge = GetPlatformRadius() - oppDistanceFromCenter;
-            sensor.AddObservation(oppDistanceToEdge / platformRadius);
         }
         else // If player reference is missing, observe zeros
         {
             sensor.AddObservation(Vector3.zero); // Direction to player
             sensor.AddObservation(Vector3.zero); // Player linearVelocity
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 4; i++)
             {
                 sensor.AddObservation(0f); // Opponent state information
             }
         }
-    }
-
-    private float GetPlatformRadius()
-    {
-        if (ArenaShrinking.Instance != null)
-        {
-            return ArenaShrinking.Instance.PlatformRadius;
-        }
-        
-        // Fallback if ArenaShrinking not found (shouldn't happen in normal gameplay)
-        Debug.LogWarning("ArenaShrinking.Instance not found, using fallback radius");
-        return platformRadius; // Use serialized fallback value
     }
 
     /// <summary>
@@ -189,42 +165,47 @@ public class AiGoatScript : Agent
         // --- Discrete Actions: Combat Actions (4 actions) ---
         // 0: No action, 1: Attack, 2: Dodge, 3: Jump, 4: Brace
         int actionType = actions.DiscreteActions[0];
+
+        bool wantBrace = _aiBracing;
+        
         switch (actionType)
         {
             case 1: goatController.Attack(); break;
             case 2: goatController.Dodge(moveDirection); break;
             case 3: goatController.Jump(); break;
+            case 4: wantBrace = true; break;   // request brace
             case 0: break;         
             default: break;
         }
 
-        if (actionType != 4 && goatController.IsBraced) goatController.Brace(false);
-        else if (actionType == 4 && !goatController.IsBraced) goatController.Brace(true);
+        if (actionType != 4) wantBrace = false;
+
+        // Apply only on transition
+        if (wantBrace != _aiBracing)
+        {
+            goatController.Brace(wantBrace);
+            _aiBracing = wantBrace;
+        }
     
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
-        AddReward(-0.0005f);
+        AddReward(-0.001f);
 
         // --- Penalty for Being Near Edge (Self-Preservation) ---
         float distanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
-        float distanceToEdge = GetPlatformRadius() - distanceFromCenter;
-        float normalizedDistanceToEdge = distanceToEdge / GetPlatformRadius(); // 0 = at edge, 1 = at center
+        float distanceToEdge = platformRadius - distanceFromCenter;
 
-        // Reward staying away from edge (smooth gradient)
-        AddReward(0.01f * normalizedDistanceToEdge);
+        if (distanceToEdge < 1.5f) // Danger zone
+        {
+            AddReward(-0.01f);
+        }
 
-        // Opponent positioning
+        // --- Small Reward for Being Close to Player (Engagement) ---
         if (opponentTransform != null)
         {
-            float opponentDistFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
-            float opponentDistToEdge = GetPlatformRadius() - opponentDistFromCenter;
-            
-            // Reward when opponent is closer to edge than you are
-            if (opponentDistToEdge < distanceToEdge)
-            {
-                float advantage = (distanceToEdge - opponentDistToEdge) / GetPlatformRadius();
-                AddReward(0.05f * advantage); // Stronger reward for positioning advantage
-            }
+            float distanceToOpponent = Vector3.Distance(transform.position, opponentTransform.position);
+            // Inverse distance reward: closer = better
+            AddReward(0.01f / (1.0f + distanceToOpponent));
         }
     }
 
@@ -262,7 +243,7 @@ public class AiGoatScript : Agent
     /// Called when player falls off the platform
     /// This should be called by your FallZoneDetector
     /// </summary>
-    public void OnOpponentFellOff()
+    public void OnPlayerFellOff()
     {
         SetReward(+1.0f); // Large positive reward for winning
         EndEpisode();

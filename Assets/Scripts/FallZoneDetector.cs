@@ -25,31 +25,42 @@ public class FallZoneDetector : MonoBehaviour
         {
             // Find the player GameObject by its tag
             GameObject playerGo = GameObject.FindWithTag(playerTag);
-            if (playerGo != null && playerRespawnPoint != null)
-            {
-                // Get the Rigidbody and respawn the player
-                Rigidbody playerRb = playerGo.GetComponent<Rigidbody>();
-                if (playerRb != null)
-                {
-                    Respawn(playerRb, playerRespawnPoint);
-                }
-            }
-
             // Find the AI GameObject by its tag
             GameObject aiGo = GameObject.FindWithTag(aiTag);
+
+            if (playerGo != null && playerRespawnPoint != null)
+            {
+                Debug.Log("Player fell off");
+                // Get the Rigidbody and respawn the player
+                Rigidbody playerRb = playerGo.GetComponent<Rigidbody>();
+                if (playerRb != null) Respawn(playerRb, playerRespawnPoint);
+
+                GoatController playerController = playerGo.GetComponent<GoatController>();
+                if (playerController != null) ResetStamina(playerController);
+
+                // during ai training self-train
+                AiGoatScript aiGoatScript = aiGo.GetComponent<AiGoatScript>();
+                AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
+                if (aiGoatScript != null) aiGoatScript.OnOpponentFellOff();
+                if (ai2GoatScript != null) ai2GoatScript.OnAIFellOff();
+            }
+
             if (aiGo != null && aiRespawnPoint != null)
             {
+                Debug.Log("AI fell off");
                 // Get the Rigidbody and respawn the AI + reset stamina
                 Rigidbody aiRb = aiGo.GetComponent<Rigidbody>();
-                GoatController playerController = playerGo.GetComponent<GoatController>();
-                if (aiRb != null)
-                {
-                    Respawn(aiRb, aiRespawnPoint);
-                    if (playerController != null)
-                    {
-                        ResetStamina(playerController);
-                    }
-                }
+
+                GoatController aiController = aiGo.GetComponent<GoatController>();
+                if (aiController != null) ResetStamina(aiController);
+
+                // during ai training self-train
+                AiGoatScript aiGoatScript = aiGo.GetComponent<AiGoatScript>();
+                AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
+                if (aiGoatScript != null) aiGoatScript.OnAIFellOff();
+                if (ai2GoatScript != null) ai2GoatScript.OnOpponentFellOff();
+
+                if (aiRb != null) Respawn(aiRb, aiRespawnPoint);
             }
         }
 
