@@ -66,5 +66,5 @@
     "explorer.fileNesting.patterns": {
         "*.sln": "*.csproj"
     },
-    "dotnet.defaultSolution": "Bumper-Goats.sln"
+    "dotnet.defaultSolution": "Bumper Goats.sln"
 }

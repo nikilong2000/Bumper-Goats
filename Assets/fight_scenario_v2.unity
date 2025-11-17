@@ -821,7 +821,6 @@ GameObject:
   - component: {fileID: 440613390}
   - component: {fileID: 440613392}
   - component: {fileID: 440613393}
-  - component: {fileID: 440613394}
   m_Layer: 0
   m_Name: GoatPlayer
   m_TagString: Player
@@ -891,7 +890,7 @@ Transform:
   m_GameObject: {fileID: 440613385}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.3, y: 26.5, z: 9}
+  m_LocalPosition: {x: 2, y: 26.5, z: 9}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -919,9 +918,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 440613385}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 8
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0.2
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -971,10 +970,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 049c1956ca97d4318aed0f321d481199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 8
-  chargeForce: 30
+  moveSpeed: 16
+  chargeForce: 200
   chargeDuration: 0.7
-  jumpForce: 9
+  jumpForce: 120
+  fallMultiplier: 10
+  lowJumpMultiplier: 2
   groundCheck: {fileID: 283941003}
   groundCheckRadius: 0.25
   groundLayer:
@@ -984,7 +985,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   braceMassMultiplier: 3
-  dodgeDistance: 1.4
+  dodgeDistance: 5.6
   dodgeDuration: 0.3
   dodgeReturnSpeed: 5
   opponent: {fileID: 1490141256}
@@ -994,36 +995,6 @@ MonoBehaviour:
   maxStamina: 100
   staminaRegenRate: 0
   jumpCooldown: 0.05
---- !u!114 &440613394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 440613385}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc8521dae9d7a43b992729a650ae1425, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 5
-  chargeForce: 30
-  chargeDuration: 0.7
-  jumpForce: 6
-  groundCheck: {fileID: 283941003}
-  groundCheckRadius: 0.25
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  goatLayer:
-    serializedVersion: 2
-    m_Bits: 128
-  braceMassMultiplier: 3
-  dodgeDistance: 1.4
-  dodgeDuration: 0.3
-  dodgeReturnSpeed: 5
-  opponent: {fileID: 1490141256}
-  goatModel: {fileID: 2062395499908065152}
 --- !u!1 &503073146
 GameObject:
   m_ObjectHideFlags: 0
@@ -1056,9 +1027,9 @@ RectTransform:
   - {fileID: 1816338742}
   m_Father: {fileID: 1554495037}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 51.3, y: -379.4}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -2057, y: -301}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &556075997
@@ -1783,7 +1754,7 @@ Transform:
   m_GameObject: {fileID: 961739749}
   serializedVersion: 2
   m_LocalRotation: {x: 0.22928596, y: -0, z: -0, w: 0.9733591}
-  m_LocalPosition: {x: 12, y: 31.49, z: -13.08}
+  m_LocalPosition: {x: 12, y: 33, z: -13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2102,7 +2073,7 @@ Transform:
   m_GameObject: {fileID: 1316124915}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 22.78, y: 26.5, z: 9}
+  m_LocalPosition: {x: 22, y: 26.5, z: 9}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2118,9 +2089,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316124915}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 8
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0.2
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -2244,15 +2215,17 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316124915}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 049c1956ca97d4318aed0f321d481199, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 8
-  chargeForce: 30
+  moveSpeed: 16
+  chargeForce: 200
   chargeDuration: 0.7
-  jumpForce: 9
+  jumpForce: 120
+  fallMultiplier: 10
+  lowJumpMultiplier: 2
   groundCheck: {fileID: 0}
   groundCheckRadius: 0.25
   groundLayer:
@@ -2262,7 +2235,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   braceMassMultiplier: 3
-  dodgeDistance: 1.4
+  dodgeDistance: 5.6
   dodgeDuration: 0.3
   dodgeReturnSpeed: 5
   opponent: {fileID: 2062395499908065152}
@@ -3024,6 +2997,8 @@ MonoBehaviour:
   chargeForce: 30
   chargeDuration: 0.7
   jumpForce: 6
+  fallMultiplier: 2.5
+  lowJumpMultiplier: 2
   groundCheck: {fileID: 229786722}
   groundCheckRadius: 0.25
   groundLayer:
@@ -3458,6 +3433,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 8.122
       objectReference: {fileID: 0}
+    - target: {fileID: 3448688510211653373, guid: 38d08fff3b78c4c5e9229e2074b67f2d, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 13400000, guid: 4d0c2664948e440f0bc783e36f37a1a7, type: 2}
     - target: {fileID: 3470868642475932838, guid: 38d08fff3b78c4c5e9229e2074b67f2d, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 

@@ -10,14 +10,16 @@ using UnityEngine.UI;
 public class GoatController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float moveSpeed = 16f;
 
     [Header("Attack Settings")]
-    [SerializeField] private float chargeForce = 30f;
+    [SerializeField] private float chargeForce = 200f;
     [SerializeField] private float chargeDuration = 0.7f; // change later only for testing
 
     [Header("Jump Settings")]
-    [SerializeField] private float jumpForce = 6f;
+    [SerializeField] private float jumpForce = 120f;
+    [SerializeField] private float fallMultiplier = 10f; // How much faster to fall (higher = less floaty)
+    [SerializeField] private float lowJumpMultiplier = 2f; // Gravity multiplier when not holding jump
     [SerializeField] private Transform groundCheck; // empty child at goats feet
     [SerializeField] private float groundCheckRadius = 0.25f; // Tunable
     [SerializeField] private LayerMask groundLayer;
@@ -27,7 +29,7 @@ public class GoatController : MonoBehaviour
     [SerializeField] private float braceMassMultiplier = 3f; // how many times heavier when bracing
 
     [Header("Dodge Settings")]
-    [SerializeField] private float dodgeDistance = 1.4f; // How far to shift on z-axis
+    [SerializeField] private float dodgeDistance = 5.6f; // How far to shift on z-axis
     [SerializeField] private float dodgeDuration = 0.3f; // How long the dodge animation takes
     [SerializeField] private float dodgeReturnSpeed = 5f; // How fast to return to z=0
 
@@ -88,7 +90,7 @@ public class GoatController : MonoBehaviour
 
     [SerializeField] private float jumpCooldown = 0.05f;
     private float jumpCooldownTimer = 0f;
-    
+
 
     private void Awake()
     {
@@ -145,7 +147,23 @@ public class GoatController : MonoBehaviour
         Vector3 move = new(moveDirection.x, moveDirection.y, 0);
         rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
 
+        ApplyJumpFallAcceleration();
+
         TryProcessJump();
+    }
+
+    private void ApplyJumpFallAcceleration()
+    {
+        if (rb.linearVelocity.y < 0)
+        {
+            // Falling down - apply stronger gravity
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime;
+        }
+        else if (rb.linearVelocity.y > 0 && !jumpRequested)
+        {
+            // Moving up but jump button not held - apply moderate gravity for shorter jumps
+            rb.linearVelocity += (lowJumpMultiplier - 1) * Physics.gravity.y * Time.fixedDeltaTime * Vector3.up;
+        }
     }
 
     // Public interface for actions
@@ -165,7 +183,7 @@ public class GoatController : MonoBehaviour
 
             if (staminaRegenCoroutine != null)
                 StopCoroutine(staminaRegenCoroutine);
-            
+
             staminaRegenCoroutine = StartCoroutine(RechargeStamina());
         }
     }
@@ -181,7 +199,7 @@ public class GoatController : MonoBehaviour
 
             if (staminaRegenCoroutine != null)
                 StopCoroutine(staminaRegenCoroutine);
-            
+
             staminaRegenCoroutine = StartCoroutine(RechargeStamina());
         }
     }
@@ -189,16 +207,16 @@ public class GoatController : MonoBehaviour
     public void Brace(bool shouldBrace)
     {
         if (shouldBrace == isBraced) return;
-        
+
         // If trying to brace but not enough stamina, prevent it
         if (shouldBrace && currentStamina < braceInitialCost)
         {
             // Debug.Log("Not enough stamina to brace!");
             return;
         }
-        
+
         isBraced = shouldBrace;
-    
+
         if (shouldBrace)
         {
             // Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
@@ -215,7 +233,7 @@ public class GoatController : MonoBehaviour
             // Stop stamina regen and start draining
             if (staminaRegenCoroutine != null)
                 StopCoroutine(staminaRegenCoroutine);
-            
+
             braceDrainCoroutine = StartCoroutine(DrainStaminaWhileBracing());
         }
         else
@@ -227,10 +245,10 @@ public class GoatController : MonoBehaviour
             // Stop draining and start regen
             if (braceDrainCoroutine != null)
                 StopCoroutine(braceDrainCoroutine);
-            
+
             if (staminaRegenCoroutine != null)
                 StopCoroutine(staminaRegenCoroutine);
-                
+
             staminaRegenCoroutine = StartCoroutine(RechargeStamina());
         }
     }
@@ -243,7 +261,7 @@ public class GoatController : MonoBehaviour
     private void TryProcessJump()
     {
         if (!jumpRequested) return;
-        
+
         // Clear request immediately to prevent it from lingering
         jumpRequested = false;
 
@@ -269,7 +287,7 @@ public class GoatController : MonoBehaviour
 
         if (staminaRegenCoroutine != null)
             StopCoroutine(staminaRegenCoroutine);
-            
+
         staminaRegenCoroutine = StartCoroutine(RechargeStamina());
     }
 
@@ -344,7 +362,7 @@ public class GoatController : MonoBehaviour
 
             if (staminaBar != null)
                 staminaBar.fillAmount = currentStamina / maxStamina;
-            
+
             yield return new WaitForSeconds(0.1f);
         }
     }
@@ -364,7 +382,7 @@ public class GoatController : MonoBehaviour
 
             if (staminaBar != null)
                 staminaBar.fillAmount = currentStamina / maxStamina;
-            
+
             yield return new WaitForSeconds(0.1f);
         }
     }
