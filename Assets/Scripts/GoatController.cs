@@ -43,7 +43,7 @@ public class GoatController : MonoBehaviour
     [Header("Stamina Settings")]
     public Image staminaBar;
     public float currentStamina;
-    private float maxStamina = 100f;
+    public float maxStamina = 100f;
     public float staminaRegenRate;
     private float dodgeStaminaCost = 10f;
     private float chargeStaminaCost = 20f;
@@ -156,7 +156,7 @@ public class GoatController : MonoBehaviour
 
     public void Attack()
     {
-        Debug.Log("Charge Action Triggered!");
+        // Debug.Log("Charge Action Triggered!");
 
         // Don't charge if already charging or stamina does not allow it
         if (!isCharging && (currentStamina >= chargeStaminaCost) && (currentStamina > 0))
@@ -172,7 +172,7 @@ public class GoatController : MonoBehaviour
 
     public void Dodge(Vector2 direction)
     {
-        Debug.Log("Dodge Action Triggered!");
+        // Debug.Log("Dodge Action Triggered!");
 
         // Don't dodge if already dodging or stamina does not allow it
         if (!isDodging && (currentStamina >= dodgeStaminaCost) && (currentStamina > 0))
@@ -193,7 +193,7 @@ public class GoatController : MonoBehaviour
         // If trying to brace but not enough stamina, prevent it
         if (shouldBrace && currentStamina < braceInitialCost)
         {
-            Debug.Log("Not enough stamina to brace!");
+            // Debug.Log("Not enough stamina to brace!");
             return;
         }
         
@@ -201,7 +201,7 @@ public class GoatController : MonoBehaviour
     
         if (shouldBrace)
         {
-            Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
+            // Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
 
             // Deduct initial stamina cost
             currentStamina -= braceInitialCost;
@@ -220,7 +220,7 @@ public class GoatController : MonoBehaviour
         }
         else
         {
-            Debug.Log("Brace Released! Mass reset to: " + originalMass);
+            // Debug.Log("Brace Released! Mass reset to: " + originalMass);
             rb.mass = originalMass;
             rb.constraints &= ~RigidbodyConstraints.FreezePositionX; // can move again
 
@@ -279,9 +279,10 @@ public class GoatController : MonoBehaviour
         float attackDirection = attackToTheRight ? 1f : -1f;
 
         // Stamina cost for making the charge
-        Debug.Log("Charging attack, stamina cost applied.");
+        // Debug.Log("Charging attack, stamina cost applied.");
         currentStamina -= chargeStaminaCost;
-        staminaBar.fillAmount = currentStamina / maxStamina;
+        if (staminaBar != null)
+            staminaBar.fillAmount = currentStamina / maxStamina;
 
         // Apply a strong forward force to the right (where opponent is)
         // rb.AddForce(transform.right * chargeForce, ForceMode.Impulse);
@@ -300,7 +301,7 @@ public class GoatController : MonoBehaviour
         isDodging = true;
 
         // Stamina cost for making the dodge
-        Debug.Log("Dodging, stamina cost applied.");
+        // Debug.Log("Dodging, stamina cost applied.");
         currentStamina -= dodgeStaminaCost;
         if (staminaBar != null)
             staminaBar.fillAmount = currentStamina / maxStamina;
@@ -361,7 +362,8 @@ public class GoatController : MonoBehaviour
                 Brace(false);
             }
 
-            staminaBar.fillAmount = currentStamina / maxStamina;
+            if (staminaBar != null)
+                staminaBar.fillAmount = currentStamina / maxStamina;
             
             yield return new WaitForSeconds(0.1f);
         }

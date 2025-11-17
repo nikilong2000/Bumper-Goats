@@ -116,6 +116,9 @@ public class AiGoatScript : Agent
         sensor.AddObservation(goatController.IsBraced ? 1f : 0f);
         sensor.AddObservation(goatController.IsDodging ? 1f : 0f);
 
+        // stamina observation
+        sensor.AddObservation(goatController.currentStamina / goatController.maxStamina);
+
         // --- Opponent Awareness (6 observations) ---
 
         if (opponentTransform != null)
@@ -203,7 +206,7 @@ public class AiGoatScript : Agent
     
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
-        AddReward(-0.0005f);
+        AddReward(-0.001f);
 
         // --- Penalty for Being Near Edge (Self-Preservation) ---
         float distanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
@@ -211,7 +214,7 @@ public class AiGoatScript : Agent
         float normalizedDistanceToEdge = distanceToEdge / GetPlatformRadius(); // 0 = at edge, 1 = at center
 
         // Reward staying away from edge (smooth gradient)
-        AddReward(0.01f * normalizedDistanceToEdge);
+        AddReward(0.001f * normalizedDistanceToEdge);
 
         // Opponent positioning
         if (opponentTransform != null)
@@ -226,6 +229,7 @@ public class AiGoatScript : Agent
                 AddReward(0.05f * advantage); // Stronger reward for positioning advantage
             }
         }
+        Debug.Log("Total reward: " + GetCumulativeReward());
     }
 
     /// <summary>
@@ -254,7 +258,7 @@ public class AiGoatScript : Agent
     /// </summary>
     public void OnAIFellOff()
     {
-        SetReward(-1.0f); // Large negative reward for losing
+        SetReward(-10.0f); // Large negative reward for losing
         EndEpisode();
     }
 
@@ -264,7 +268,7 @@ public class AiGoatScript : Agent
     /// </summary>
     public void OnOpponentFellOff()
     {
-        SetReward(+1.0f); // Large positive reward for winning
+        SetReward(+10.0f); // Large positive reward for winning
         EndEpisode();
     }
 }
