@@ -205,7 +205,8 @@ public class GoatController : MonoBehaviour
 
             // Deduct initial stamina cost
             currentStamina -= braceInitialCost;
-            staminaBar.fillAmount = currentStamina / maxStamina;
+            if (staminaBar != null)
+                staminaBar.fillAmount = currentStamina / maxStamina;
 
             // make goat heavier (more stable)
             rb.mass = originalMass * braceMassMultiplier;
@@ -255,7 +256,8 @@ public class GoatController : MonoBehaviour
 
         // Execute the jump 
         currentStamina -= jumpStaminaCost;
-        staminaBar.fillAmount = currentStamina / maxStamina;
+        if (staminaBar != null)
+            staminaBar.fillAmount = currentStamina / maxStamina;
 
         Vector3 v = rb.linearVelocity;
         rb.linearVelocity = v;
@@ -300,7 +302,8 @@ public class GoatController : MonoBehaviour
         // Stamina cost for making the dodge
         Debug.Log("Dodging, stamina cost applied.");
         currentStamina -= dodgeStaminaCost;
-        staminaBar.fillAmount = currentStamina / maxStamina;
+        if (staminaBar != null)
+            staminaBar.fillAmount = currentStamina / maxStamina;
 
         // dodge direction random for now (left, right)
         float direction = UnityEngine.Random.value > 0.5f ? 1f : -1f;
@@ -338,7 +341,8 @@ public class GoatController : MonoBehaviour
             if (currentStamina > maxStamina)
                 currentStamina = maxStamina;
 
-            staminaBar.fillAmount = currentStamina / maxStamina;
+            if (staminaBar != null)
+                staminaBar.fillAmount = currentStamina / maxStamina;
             
             yield return new WaitForSeconds(0.1f);
         }
@@ -361,5 +365,12 @@ public class GoatController : MonoBehaviour
             
             yield return new WaitForSeconds(0.1f);
         }
+    }
+
+    public void ResetStamina()
+    {
+        currentStamina = 100f;
+        if (staminaBar != null)
+            staminaBar.fillAmount = 1f;
     }
 }

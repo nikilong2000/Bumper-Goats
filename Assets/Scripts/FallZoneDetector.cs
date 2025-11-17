@@ -40,9 +40,9 @@ public class FallZoneDetector : MonoBehaviour
 
                 // during ai training self-train
                 AiGoatScript aiGoatScript = aiGo.GetComponent<AiGoatScript>();
-                AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
+                // AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
                 if (aiGoatScript != null) aiGoatScript.OnOpponentFellOff();
-                if (ai2GoatScript != null) ai2GoatScript.OnAIFellOff();
+                // if (ai2GoatScript != null) ai2GoatScript.OnAIFellOff();
             }
 
             if (aiGo != null && aiRespawnPoint != null)
@@ -56,9 +56,9 @@ public class FallZoneDetector : MonoBehaviour
 
                 // during ai training self-train
                 AiGoatScript aiGoatScript = aiGo.GetComponent<AiGoatScript>();
-                AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
+                // AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
                 if (aiGoatScript != null) aiGoatScript.OnAIFellOff();
-                if (ai2GoatScript != null) ai2GoatScript.OnOpponentFellOff();
+                // if (ai2GoatScript != null) ai2GoatScript.OnOpponentFellOff();
 
                 if (aiRb != null) Respawn(aiRb, aiRespawnPoint);
             }
@@ -81,7 +81,6 @@ public class FallZoneDetector : MonoBehaviour
 
     private void ResetStamina(GoatController controller)
     {
-        controller.currentStamina = 100f; // Reset to max stamina
-        controller.staminaBar.fillAmount = 1f; // Fill the stamina bar
+        controller.ResetStamina();
     }
 }

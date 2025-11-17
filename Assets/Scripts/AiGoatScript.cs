@@ -62,22 +62,22 @@ public class AiGoatScript : Agent
 
         // Reset opponent goat position and physics only if it's a player
         // Temporary disabled to test self-training
-        // if (opponentTransform != null)
-        // {
-        //     // Check if the opponent is a player by looking for PlayerGoatController component
-        //     PlayerGoatController playerController = opponentTransform.GetComponent<PlayerGoatController>();
-        //     if (playerController != null) // Only reset if it's a player
-        //     {
-        //         opponentTransform.position = opponentStartPosition;
-        //         opponentTransform.rotation = opponentStartRotation;
+        if (opponentTransform != null)
+        {
+            // Check if the opponent is a player by looking for PlayerGoatController component
+            PlayerGoatController playerController = opponentTransform.GetComponent<PlayerGoatController>();
+            if (playerController != null) // Only reset if it's a player
+            {
+                opponentTransform.position = opponentStartPosition;
+                opponentTransform.rotation = opponentStartRotation;
 
-        //         if (opponentRb != null)
-        //         {
-        //             opponentRb.linearVelocity = Vector3.zero;
-        //             opponentRb.angularVelocity = Vector3.zero;
-        //         }
-        //     }
-        // }
+                if (opponentRb != null)
+                {
+                    opponentRb.linearVelocity = Vector3.zero;
+                    opponentRb.angularVelocity = Vector3.zero;
+                }
+            }
+        }
     }
 
     /// <summary>
