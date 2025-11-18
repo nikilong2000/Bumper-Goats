@@ -1,9 +1,5 @@
 # Bumper Goats - UML Class Diagrams
 
-This document contains 3 focused UML class diagrams for the Bumper Goats Unity project.
-
----
-
 ## Diagram 1: Controller System (Player & ML-Agent)
 
 This diagram shows how the player controller and AI controller both use the core `GoatController` component.
