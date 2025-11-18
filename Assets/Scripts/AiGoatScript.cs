@@ -25,8 +25,10 @@ public class AiGoatScript : Agent
     private Quaternion startRotation;
     private Quaternion opponentStartRotation;
 
+    private Vector3 previousOpponentPosition;
+
     // Agent field
-    private bool _aiBracing = false;
+    // private bool _aiBracing = false;
 
     /// <summary>
     /// Called once when the agent is first initialized
@@ -71,12 +73,18 @@ public class AiGoatScript : Agent
                 opponentTransform.position = opponentStartPosition;
                 opponentTransform.rotation = opponentStartRotation;
 
+                previousOpponentPosition = opponentTransform.position;
+
                 if (opponentRb != null)
                 {
                     opponentRb.linearVelocity = Vector3.zero;
                     opponentRb.angularVelocity = Vector3.zero;
                 }
             }
+        }
+        else
+        {
+            previousOpponentPosition = Vector3.zero;
         }
     }
 
@@ -213,23 +221,75 @@ public class AiGoatScript : Agent
         float distanceToEdge = GetPlatformRadius() - distanceFromCenter;
         float normalizedDistanceToEdge = distanceToEdge / GetPlatformRadius(); // 0 = at edge, 1 = at center
 
-        // Reward staying away from edge (smooth gradient)
-        AddReward(0.001f * normalizedDistanceToEdge);
+        // Reward staying away from edge (smooth gradient), but only penalize near edge, don't reward center
+        if (normalizedDistanceToEdge < 0.2f)
+        {
+            AddReward(-0.01f * (0.2f - normalizedDistanceToEdge));
+        }
 
-        // Opponent positioning
+        // --- Engagement reward (encourages moving toward opponent) ---
         if (opponentTransform != null)
         {
-            float opponentDistFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
-            float opponentDistToEdge = GetPlatformRadius() - opponentDistFromCenter;
+            float distanceToOpponent = Vector3.Distance(transform.position, opponentTransform.position);
+            
+            // Reward being close to opponent (encourages engagement)
+            float proximityReward = 0.02f / (1.0f + distanceToOpponent);
+            AddReward(proximityReward);
+
+            // Opponent positioning advantage
+            // float opponentDistFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
+            // float opponentDistToEdge = GetPlatformRadius() - opponentDistFromCenter;
             
             // Reward when opponent is closer to edge than you are
-            if (opponentDistToEdge < distanceToEdge)
+            // if (opponentDistToEdge < distanceToEdge)
+            // {
+            //     float advantage = (distanceToEdge - opponentDistToEdge) / GetPlatformRadius();
+            //     AddReward(0.1f * advantage); // Increased from 0.05f
+            // }
+            
+            // Reward if opponent has been moved away and towards the edge
+            Vector3 opponentMovement = opponentTransform.position - previousOpponentPosition;
+            float opponentMoveDistance = opponentMovement.magnitude;
+            if (opponentMoveDistance > 0.01f) // Opponent actually moved
             {
-                float advantage = (distanceToEdge - opponentDistToEdge) / GetPlatformRadius();
-                AddReward(0.05f * advantage); // Stronger reward for positioning advantage
+                // Get the direction the goat is facing (on ground plane)
+                Vector3 facingDirection = new Vector3(transform.forward.x, 0f, transform.forward.z).normalized;
+                
+                // Get the direction opponent moved (on ground plane)
+                Vector3 opponentMoveDirection = new Vector3(opponentMovement.x, 0f, opponentMovement.z).normalized;
+                
+                // Calculate how well the push aligns with facing direction
+                float alignment = Vector3.Dot(facingDirection, opponentMoveDirection);
+                
+                // Reward pushing in the direction we're facing (0 = perpendicular, 1 = perfect alignment)
+                if (alignment > 0.3f) // Only reward if push is somewhat aligned with facing direction
+                {
+                    float pushReward = 0.15f * alignment * opponentMoveDistance;
+                    AddReward(pushReward);
+                    
+                    // BONUS: Extra reward if push also moves opponent toward edge
+                    float opponentDistFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
+                    float previousOpponentDistFromCenter = Vector3.Distance(previousOpponentPosition, platformTransform.position);
+                    
+                    if (opponentDistFromCenter > previousOpponentDistFromCenter) // Moved away from center
+                    {
+                        float edgeBonus = (opponentDistFromCenter - previousOpponentDistFromCenter) / GetPlatformRadius();
+                        AddReward(0.2f * edgeBonus * alignment); // Bonus scaled by alignment
+                    }
+                }
             }
+            
+            previousOpponentPosition = opponentTransform.position;
         }
-        Debug.Log("Total reward: " + GetCumulativeReward());
+
+        // TODO: Reward for executing actions successfully:
+        //  - Attack should be rewarded if it hits the opponent
+        //  - Dodge should be rewarded if it avoids the opponent's attack
+        //  - Jump should be rewarded if it avoids the opponent's attack
+        //  - Brace should be rewarded if it avoids the opponent's attack
+        //  - If the AI is hit, the AI should be penalized
+
+        // Debug.Log("Total reward: " + GetCumulativeReward());
     }
 
     /// <summary>
