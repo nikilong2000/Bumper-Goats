@@ -99,6 +99,29 @@ public class GoatController : MonoBehaviour
 
         facingRight = Quaternion.Euler(0, 90, 0);
         facingLeft = Quaternion.Euler(0, -90, 0);
+
+        // Initialize stamina if not set
+        if (currentStamina <= 0) currentStamina = maxStamina;
+    }
+
+    private void OnEnable()
+    {
+        // Ensure stamina regen starts when the script is enabled
+        if (staminaRegenCoroutine != null) StopCoroutine(staminaRegenCoroutine);
+        staminaRegenCoroutine = StartCoroutine(RechargeStamina());
+
+        // Reset flags that might be stuck if disabled during action
+        isCharging = false;
+        isDodging = false;
+        isBraced = false;
+        jumpRequested = false;
+
+        // Reset mass if it was stuck in brace mode
+        if (rb != null)
+        {
+            rb.mass = originalMass;
+            rb.constraints &= ~RigidbodyConstraints.FreezePositionX;
+        }
     }
 
     private void Update()
@@ -125,7 +148,9 @@ public class GoatController : MonoBehaviour
         }
 
         // Reset jump lock when grounded
-        if (isGrounded) jumpUsedThisGround = false;
+        // Only reset if we are not moving upwards significantly (prevents resetting during takeoff)
+        if (isGrounded && rb.linearVelocity.y <= 0.1f)
+            jumpUsedThisGround = false;
 
         // Cooldown timer
         if (jumpCooldownTimer > 0f)

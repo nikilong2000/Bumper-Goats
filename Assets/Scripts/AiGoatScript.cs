@@ -14,7 +14,7 @@ public class AiGoatScript : Agent
 
     private Rigidbody rb;
     private Rigidbody opponentRb;
-    
+
     private GoatController goatController;
     private GoatController opponentController;
 
@@ -177,7 +177,7 @@ public class AiGoatScript : Agent
         {
             return ArenaShrinking.Instance.PlatformRadius;
         }
-        
+
         // Fallback if ArenaShrinking not found (shouldn't happen in normal gameplay)
         Debug.LogWarning("ArenaShrinking.Instance not found, using fallback radius");
         return platformRadius; // Use serialized fallback value
@@ -205,13 +205,13 @@ public class AiGoatScript : Agent
             case 1: goatController.Attack(); break;
             case 2: goatController.Dodge(moveDirection); break;
             case 3: goatController.Jump(); break;
-            case 0: break;         
+            case 0: break;
             default: break;
         }
 
         if (actionType != 4 && goatController.IsBraced) goatController.Brace(false);
         else if (actionType == 4 && !goatController.IsBraced) goatController.Brace(true);
-    
+
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
         AddReward(-0.001f);
@@ -231,7 +231,7 @@ public class AiGoatScript : Agent
         if (opponentTransform != null)
         {
             float distanceToOpponent = Vector3.Distance(transform.position, opponentTransform.position);
-            
+
             // Reward being close to opponent (encourages engagement)
             float proximityReward = 0.02f / (1.0f + distanceToOpponent);
             AddReward(proximityReward);
@@ -239,14 +239,14 @@ public class AiGoatScript : Agent
             // Opponent positioning advantage
             // float opponentDistFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
             // float opponentDistToEdge = GetPlatformRadius() - opponentDistFromCenter;
-            
+
             // Reward when opponent is closer to edge than you are
             // if (opponentDistToEdge < distanceToEdge)
             // {
             //     float advantage = (distanceToEdge - opponentDistToEdge) / GetPlatformRadius();
             //     AddReward(0.1f * advantage); // Increased from 0.05f
             // }
-            
+
             // Reward if opponent has been moved away and towards the edge
             Vector3 opponentMovement = opponentTransform.position - previousOpponentPosition;
             float opponentMoveDistance = opponentMovement.magnitude;
@@ -254,23 +254,23 @@ public class AiGoatScript : Agent
             {
                 // Get the direction the goat is facing (on ground plane)
                 Vector3 facingDirection = new Vector3(transform.forward.x, 0f, transform.forward.z).normalized;
-                
+
                 // Get the direction opponent moved (on ground plane)
                 Vector3 opponentMoveDirection = new Vector3(opponentMovement.x, 0f, opponentMovement.z).normalized;
-                
+
                 // Calculate how well the push aligns with facing direction
                 float alignment = Vector3.Dot(facingDirection, opponentMoveDirection);
-                
+
                 // Reward pushing in the direction we're facing (0 = perpendicular, 1 = perfect alignment)
                 if (alignment > 0.3f) // Only reward if push is somewhat aligned with facing direction
                 {
                     float pushReward = 0.15f * alignment * opponentMoveDistance;
                     AddReward(pushReward);
-                    
+
                     // BONUS: Extra reward if push also moves opponent toward edge
                     float opponentDistFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
                     float previousOpponentDistFromCenter = Vector3.Distance(previousOpponentPosition, platformTransform.position);
-                    
+
                     if (opponentDistFromCenter > previousOpponentDistFromCenter) // Moved away from center
                     {
                         float edgeBonus = (opponentDistFromCenter - previousOpponentDistFromCenter) / GetPlatformRadius();
@@ -278,7 +278,7 @@ public class AiGoatScript : Agent
                     }
                 }
             }
-            
+
             previousOpponentPosition = opponentTransform.position;
         }
 

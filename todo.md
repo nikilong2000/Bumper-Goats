@@ -2,16 +2,9 @@
 
 ## First Priority TODOs
 
-- [ ] See what went wrong while merging so that
-  1. [ ] Changing directions when jumping is possible again
-  2. [ ] TryJump() is starting dodge animation????
-  3. [ ] Check for other weird behaviour
-- [x] Implement shrinking arena
-- [x] Dodge left and right on Q and E respectively and cooldown to not shift away more than once
-- [ ] Adjust PlayerGoatController.cs to move based on direction of the goat (facing which direction?)
 - [ ] Implement ML agent moving (for now)
   - [ ] Define Observations and actions
-- [x] Create HUD for Cooldown/Stamina
+- [ ] Make attack more responsive
 
 ## Second Priority TODOs
 
@@ -23,6 +16,14 @@
 
 ## DONE
 
+- [x] Adjust PlayerGoatController.cs to move based on direction of the goat (facing which direction?)
+- [x] Create HUD for Cooldown/Stamina
+- [x] Implement shrinking arena
 - [x] Put inspector values in code
 - [x] Implement dodging
 - [x] No movement during bracing and dodging and jumping
+- [x] See what went wrong while merging so that
+  1. [x] Changing directions when jumping is possible again
+  2. [x] TryJump() is starting dodge animation????
+  3. [x] Check for other weird behaviour
+- [x] Dodge left and right on Q and E respectively and cooldown to not shift away more than once
