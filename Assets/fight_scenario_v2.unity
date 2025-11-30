@@ -259,6 +259,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
+--- !u!4 &177101841 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 488943421759591365, guid: 38d08fff3b78c4c5e9229e2074b67f2d, type: 3}
+  m_PrefabInstance: {fileID: 4040832429031619500}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &190951490 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 8ca2002b79c214a1a8414eab4f3858ab, type: 3}
@@ -890,7 +895,7 @@ Transform:
   m_GameObject: {fileID: 440613385}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2, y: 26.5, z: 9}
+  m_LocalPosition: {x: 3.97, y: 26.5, z: 9}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -973,10 +978,9 @@ MonoBehaviour:
   moveSpeed: 16
   chargeForce: 200
   chargeDuration: 0.7
+  pushForce: 300
   jumpForce: 120
-  fallMultiplier: 10
-  lowJumpMultiplier: 2
-  groundCheck: {fileID: 283941003}
+  platform: {fileID: 177101841}
   groundCheckRadius: 0.25
   groundLayer:
     serializedVersion: 2
@@ -988,7 +992,7 @@ MonoBehaviour:
   dodgeDistance: 5.6
   dodgeDuration: 0.3
   dodgeReturnSpeed: 5
-  opponent: {fileID: 1490141256}
+  opponent: {fileID: 1316124919}
   goatModel: {fileID: 2062395499908065152}
   staminaBar: {fileID: 324699390}
   currentStamina: 100
@@ -2073,7 +2077,7 @@ Transform:
   m_GameObject: {fileID: 1316124915}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 22, y: 26.5, z: 9}
+  m_LocalPosition: {x: 20.09, y: 26.5, z: 9}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2115,7 +2119,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316124915}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2675829237ac94dd285d1ba3839731bb, type: 3}
   m_Name: 
@@ -2223,10 +2227,9 @@ MonoBehaviour:
   moveSpeed: 16
   chargeForce: 200
   chargeDuration: 0.7
+  pushForce: 300
   jumpForce: 120
-  fallMultiplier: 10
-  lowJumpMultiplier: 2
-  groundCheck: {fileID: 0}
+  platform: {fileID: 177101841}
   groundCheckRadius: 0.25
   groundLayer:
     serializedVersion: 2
@@ -2238,7 +2241,7 @@ MonoBehaviour:
   dodgeDistance: 5.6
   dodgeDuration: 0.3
   dodgeReturnSpeed: 5
-  opponent: {fileID: 2062395499908065152}
+  opponent: {fileID: 440613389}
   goatModel: {fileID: 1490141256}
   staminaBar: {fileID: 0}
   currentStamina: 100
@@ -2620,7 +2623,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
@@ -2996,10 +2999,9 @@ MonoBehaviour:
   moveSpeed: 5
   chargeForce: 30
   chargeDuration: 0.7
+  pushForce: 300
   jumpForce: 6
-  fallMultiplier: 2.5
-  lowJumpMultiplier: 2
-  groundCheck: {fileID: 229786722}
+  platform: {fileID: 0}
   groundCheckRadius: 0.25
   groundLayer:
     serializedVersion: 2

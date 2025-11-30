@@ -18,14 +18,7 @@ public class AiGoatScript : Agent
     private GoatController goatController;
     private GoatController opponentController;
 
-    // Store initial positions for episode reset
-    private Vector3 startPosition;
-    private Vector3 opponentStartPosition;
-
-    private Quaternion startRotation;
-    private Quaternion opponentStartRotation;
-
-    private Vector3 previousOpponentPosition;
+    private Vector3 previousOpponentPosition = Vector3.zero;
 
     // Agent field
     // private bool _aiBracing = false;
@@ -37,17 +30,14 @@ public class AiGoatScript : Agent
     {
         rb = GetComponent<Rigidbody>();
         goatController = GetComponent<GoatController>();
+        goatController.SetOriginalPositionAndRotation();
         if (opponentTransform != null)
         {
             opponentRb = opponentTransform.GetComponent<Rigidbody>();
             opponentController = opponentTransform.GetComponent<GoatController>();
+            opponentController.SetOriginalPositionAndRotation();
         }
 
-        // Store starting positions
-        startPosition = transform.position;
-        opponentStartPosition = opponentTransform.position;
-        startRotation = transform.rotation;
-        opponentStartRotation = opponentTransform.rotation;
     }
 
     /// <summary>
@@ -57,33 +47,13 @@ public class AiGoatScript : Agent
     public override void OnEpisodeBegin()
     {
         // Reset AI goat position and physics
-        transform.position = startPosition;
-        transform.rotation = startRotation;
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
-
-        // Reset opponent goat position and physics only if it's a player
-        // Temporary disabled to test self-training
+        goatController.Reset();
         if (opponentTransform != null)
         {
-            // Check if the opponent is a player by looking for PlayerGoatController component
-            PlayerGoatController playerController = opponentTransform.GetComponent<PlayerGoatController>();
-            if (playerController != null) // Only reset if it's a player
-            {
-                opponentTransform.position = opponentStartPosition;
-                opponentTransform.rotation = opponentStartRotation;
-
-                previousOpponentPosition = opponentTransform.position;
-
-                if (opponentRb != null)
-                {
-                    opponentRb.linearVelocity = Vector3.zero;
-                    opponentRb.angularVelocity = Vector3.zero;
-                }
-            }
-        }
-        else
-        {
+            // Reset opponent goat position and physics only if it's a player
+            opponentController.Reset();
+            previousOpponentPosition = opponentTransform.position;
+        } else {
             previousOpponentPosition = Vector3.zero;
         }
     }
@@ -129,7 +99,7 @@ public class AiGoatScript : Agent
 
         // --- Opponent Awareness (6 observations) ---
 
-        if (opponentTransform != null)
+        if (opponentTransform != null && opponentController != null)
         {
             // 6. Vector from AI to Player (3 values: x, y, z)
             // This is the most important observation for pushing
@@ -202,12 +172,14 @@ public class AiGoatScript : Agent
         int actionType = actions.DiscreteActions[0];
         switch (actionType)
         {
-            case 1: goatController.Attack(); break;
-            case 2: goatController.Dodge(moveDirection); break;
-            case 3: goatController.Jump(); break;
+            case 1: goatController.Attack(); break; // Debug.Log("Attack triggered"); break;
+            case 2: goatController.Dodge(moveDirection); break; // Debug.Log("Dodge triggered"); break;
+            case 3: goatController.Jump(); break; // Debug.Log("Jump triggered"); break;
+            case 4: goatController.Brace(true); break; // Debug.Log("Brace triggered"); break;
             case 0: break;         
             default: break;
         }
+        // Debug.Log("stamina: " + goatController.currentStamina + " grounded: " + goatController.IsGrounded);
 
         if (actionType != 4 && goatController.IsBraced) goatController.Brace(false);
         else if (actionType == 4 && !goatController.IsBraced) goatController.Brace(true);
@@ -215,6 +187,13 @@ public class AiGoatScript : Agent
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
         AddReward(-0.001f);
+
+        // --- Penalty for Jumping (Discourage unnecessary jumping) ---
+        // Apply penalty when the goat is not grounded (jumping or in the air)
+        if (!goatController.IsGrounded)
+        {
+            AddReward(-0.005f); // Small penalty for being in the air
+        }
 
         // --- Penalty for Being Near Edge (Self-Preservation) ---
         float distanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);

@@ -15,13 +15,12 @@ public class GoatController : MonoBehaviour
     [Header("Attack Settings")]
     [SerializeField] private float chargeForce = 200f;
     [SerializeField] private float chargeDuration = 0.7f; // change later only for testing
+    [SerializeField] private float pushForce = 800f; // Force applied to opponent when hit during charge
 
     [Header("Jump Settings")]
     [SerializeField] private float jumpForce = 120f;
-    [SerializeField] private float fallMultiplier = 10f; // How much faster to fall (higher = less floaty)
-    [SerializeField] private float lowJumpMultiplier = 2f; // Gravity multiplier when not holding jump
-    [SerializeField] private Transform groundCheck; // empty child at goats feet
-    [SerializeField] private float groundCheckRadius = 0.25f; // Tunable
+    [SerializeField] private Transform platform;
+    [SerializeField] private float groundCheckRadius = 0.25f; // Tunable tolerance for ground detection
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask goatLayer; // since the goat should be grounded when hitting the other goat
 
@@ -38,10 +37,6 @@ public class GoatController : MonoBehaviour
     [SerializeField] private Transform opponent; // Drag the opponent goat here in the Inspector
     [SerializeField] private Transform goatModel; // Drag the child object with the renderer here
 
-    // // Store the rotations so we don't create new ones every frame
-    // private Quaternion facingRight;
-    // private Quaternion facingLeft;
-
     [Header("Stamina Settings")]
     public Image staminaBar;
     public float currentStamina;
@@ -55,8 +50,10 @@ public class GoatController : MonoBehaviour
 
     private Coroutine staminaRegenCoroutine;
     private Coroutine braceDrainCoroutine;
+    private Coroutine chargeAttackCoroutine;
+    private Coroutine dodgeAnimationCoroutine;
     private float staminaRechargeDelay = 2f; // Delay before stamina starts recharging
-    private float staminaRechargeRate = 15f; // Stamina points per second
+    private float staminaRechargeRate = 5f; // Stamina points per second
 
     // Internal state
     private Rigidbody rb;
@@ -66,12 +63,14 @@ public class GoatController : MonoBehaviour
     private bool isGrounded = false;
     private bool isBraced = false;
     private bool isDodging = false;
+    private GoatController currentAttacker = null; // Track who is currently attacking us
 
     // Getters for AI observations
     public bool IsGrounded => isGrounded;
     public bool IsCharging => isCharging;
     public bool IsBraced => isBraced;
     public bool IsDodging => isDodging;
+    public bool AttackToTheRight => attackToTheRight; // Getter for attack direction
 
     // private bool isJumping = false;
     private float jumpStartXVelocity; // Store x-velocity when jump starts
@@ -91,9 +90,83 @@ public class GoatController : MonoBehaviour
     [SerializeField] private float jumpCooldown = 0.05f;
     private float jumpCooldownTimer = 0f;
 
+    private Vector3 originalPosition;
+    private Quaternion originalRotation;
+    
+    // Reset lock to prevent Update/FixedUpdate from interfering during reset
+    private bool isResetting = false;
+
+    public void SetOriginalPositionAndRotation()
+    {
+        // Debug.Log($"[GoatController] SetOriginalPositionAndRotation() executed on {gameObject.name}");
+        originalPosition = transform.position;
+        originalRotation = transform.rotation;
+    }
+
+    public void Reset()
+    {
+        Debug.Log("Resetting GoatController on object with tag: " + gameObject.tag);
+        // Lock updates to prevent interference
+        isResetting = true;
+        
+        // Stop all ongoing coroutines
+        if (staminaRegenCoroutine != null)
+        {
+            StopCoroutine(staminaRegenCoroutine);
+            staminaRegenCoroutine = null;
+        }
+        
+        if (braceDrainCoroutine != null)
+        {
+            StopCoroutine(braceDrainCoroutine);
+            braceDrainCoroutine = null;
+        }
+        
+        if (chargeAttackCoroutine != null)
+        {
+            StopCoroutine(chargeAttackCoroutine);
+            chargeAttackCoroutine = null;
+        }
+        
+        if (dodgeAnimationCoroutine != null)
+        {
+            StopCoroutine(dodgeAnimationCoroutine);
+            dodgeAnimationCoroutine = null;
+        }
+        
+        // Reset state flags
+        isCharging = false;
+        isDodging = false;
+        isBraced = false;
+        currentAttacker = null;
+        
+        // Reset all state flags
+        jumpRequested = false;
+        jumpUsedThisGround = false;
+        jumpCooldownTimer = 0f;
+        moveDirection = Vector2.zero;
+        
+        // Reset physics state
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+        
+        // Reset position and rotation
+        transform.position = originalPosition;
+        transform.rotation = originalRotation;
+        
+        // Reset stamina
+        ResetStamina();
+        
+        // Unlock updates - reset is complete
+        isResetting = false;
+    }
 
     private void Awake()
     {
+        // Debug.Log($"[GoatController] Awake() executed on {gameObject.name}");
         rb = GetComponent<Rigidbody>();
         originalMass = rb.mass;
 
@@ -103,6 +176,9 @@ public class GoatController : MonoBehaviour
 
     private void Update()
     {
+        // Skip update if reset is in progress
+        if (isResetting) return;
+        
         float directionToOpponent = opponent.position.x - transform.position.x;
         if (directionToOpponent > 0)
         {
@@ -116,13 +192,56 @@ public class GoatController : MonoBehaviour
         }
 
 
-        // Ground check (make sure groundCheck is set in the Inspector)
-        if (groundCheck != null)
+        // Ground check using platform only
+        bool groundedOnPlatform = false;
+        
+        // Check if grounded on platform using platform Transform
+        if (platform != null)
         {
-            // combine ground + other goat masks and check against both
-            int combinedMask = groundLayer.value | goatLayer.value;
-            isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, combinedMask, QueryTriggerInteraction.Ignore);
+            // Get the platform's surface Y position
+            float platformSurfaceY = platform.position.y;
+            
+            // Try to get platform's actual surface height from renderer bounds
+            Renderer platformRenderer = platform.GetComponent<Renderer>();
+            if (platformRenderer != null)
+            {
+                // Surface is at the top of the bounds
+                platformSurfaceY = platformRenderer.bounds.max.y;
+            }
+            
+            // Use goat's position directly for ground check
+            float goatY = transform.position.y;
+            
+            // Check if goat is close to platform surface (within groundCheckRadius)
+            // Allow a small tolerance above the surface (for when goat is slightly above)
+            float distanceToPlatformY = goatY - platformSurfaceY;
+            bool isAtCorrectHeight = distanceToPlatformY >= -groundCheckRadius && distanceToPlatformY <= groundCheckRadius;
+            
+            // Also check if goat is horizontally over the platform (not off the edge)
+            // Calculate horizontal distance from platform center
+            Vector3 goatPos = transform.position;
+            Vector3 platformPos = platform.position;
+            float horizontalDistance = Vector3.Distance(new Vector3(goatPos.x, 0, goatPos.z), new Vector3(platformPos.x, 0, platformPos.z));
+            
+            // Get platform radius (check ArenaShrinking singleton first, then fallback to renderer bounds)
+            float platformRadius = 10f; // Default fallback
+            if (ArenaShrinking.Instance != null)
+            {
+                platformRadius = ArenaShrinking.Instance.PlatformRadius;
+            }
+            else if (platformRenderer != null)
+            {
+                // Use renderer bounds as fallback
+                Bounds bounds = platformRenderer.bounds;
+                platformRadius = Mathf.Max(bounds.extents.x, bounds.extents.z);
+            }
+            
+            // Goat is grounded only if it's at the right height AND horizontally over the platform
+            groundedOnPlatform = isAtCorrectHeight && horizontalDistance <= platformRadius;
         }
+        
+        // Only check platform for grounded state
+        isGrounded = groundedOnPlatform;
 
         // Reset jump lock when grounded
         if (isGrounded) jumpUsedThisGround = false;
@@ -143,43 +262,116 @@ public class GoatController : MonoBehaviour
     // FixedUpdate is called on a fixed time step, ideal for physics calculations
     private void FixedUpdate()
     {
-        // Create a 3D movement vector from our 2D input
-        Vector3 move = new(moveDirection.x, moveDirection.y, 0);
-        rb.linearVelocity = new Vector3(move.x * moveSpeed, rb.linearVelocity.y, move.z * moveSpeed);
-
-        ApplyJumpFallAcceleration();
+        // Skip fixed update if reset is in progress
+        if (isResetting) return;
+        
+        // Perform ground check in FixedUpdate to ensure it's current when we use it
+        // This prevents timing issues where Update() hasn't run yet this frame
+        bool groundedOnPlatform = false;
+        
+        // Check if grounded on platform using platform Transform
+        if (platform != null)
+        {
+            // Get the platform's surface Y position
+            // Account for platform's scale if it has a renderer or collider
+            float platformSurfaceY = platform.position.y;
+            
+            // Try to get platform's actual surface height from renderer bounds
+            Renderer platformRenderer = platform.GetComponent<Renderer>();
+            if (platformRenderer != null)
+            {
+                // Surface is at the top of the bounds
+                platformSurfaceY = platformRenderer.bounds.max.y;
+            }
+            else
+            {
+                // Fallback: assume platform center is at its surface, or add half scale
+                // Most platforms are thin, so position.y should be close to surface
+                platformSurfaceY = platform.position.y;
+            }
+            
+            // Use goat's position directly for ground check
+            float goatY = transform.position.y;
+            
+            // Check if goat is close to platform surface (within groundCheckRadius)
+            // Allow a small tolerance above the surface (for when goat is slightly above)
+            float distanceToPlatformY = goatY - platformSurfaceY;
+            bool isAtCorrectHeight = distanceToPlatformY >= -groundCheckRadius && distanceToPlatformY <= groundCheckRadius;
+            
+            // Also check if goat is horizontally over the platform (not off the edge)
+            // Calculate horizontal distance from platform center
+            Vector3 goatPos = transform.position;
+            Vector3 platformPos = platform.position;
+            float horizontalDistance = Vector3.Distance(new Vector3(goatPos.x, 0, goatPos.z), new Vector3(platformPos.x, 0, platformPos.z));
+            
+            // Get platform radius (check ArenaShrinking singleton first, then fallback to renderer bounds)
+            float platformRadius = 10f; // Default fallback
+            if (ArenaShrinking.Instance != null)
+            {
+                platformRadius = ArenaShrinking.Instance.PlatformRadius;
+            }
+            else if (platformRenderer != null)
+            {
+                // Use renderer bounds as fallback
+                Bounds bounds = platformRenderer.bounds;
+                platformRadius = Mathf.Max(bounds.extents.x, bounds.extents.z);
+            }
+            
+            // Goat is grounded only if it's at the right height AND horizontally over the platform
+            groundedOnPlatform = isAtCorrectHeight && horizontalDistance <= platformRadius;
+        }
+        
+        // Only check platform for grounded state
+        isGrounded = groundedOnPlatform;
+        
+        // Apply horizontal movement (X-axis only) - do this first
+        // If we're being attacked, we'll add the attack force after
+        if (currentAttacker == null)
+        {
+            // Normal movement: set velocity directly
+            rb.linearVelocity = new Vector3(moveDirection.x * moveSpeed, rb.linearVelocity.y, 0);
+        }
+        
+        // Apply attack push force if we're being attacked
+        // This adds to the current velocity/forces
+        if (currentAttacker != null)
+        {
+            Debug.Log($"[GoatController] Linear Velocity Before ApplyAttackPush: {rb.linearVelocity}");
+            ApplyAttackPush();
+            Debug.Log($"[GoatController] Linear Velocity After ApplyAttackPush: {rb.linearVelocity}");
+        }
+        
+        // Handle grounding for all cases
+        // Clamp Y velocity to 0 when grounded to prevent floating
+        // This must be done AFTER setting velocity so gravity can work when not grounded
+        if (isGrounded)
+        {
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+        }
 
         TryProcessJump();
-    }
+        if (currentAttacker != null)
+            Debug.Log($"[GoatController] Linear Velocity After FixedUpdate: {rb.linearVelocity}");
 
-    private void ApplyJumpFallAcceleration()
-    {
-        if (rb.linearVelocity.y < 0)
-        {
-            // Falling down - apply stronger gravity
-            rb.linearVelocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime;
-        }
-        else if (rb.linearVelocity.y > 0 && !jumpRequested)
-        {
-            // Moving up but jump button not held - apply moderate gravity for shorter jumps
-            rb.linearVelocity += (lowJumpMultiplier - 1) * Physics.gravity.y * Time.fixedDeltaTime * Vector3.up;
-        }
     }
 
     // Public interface for actions
     public void Move(Vector2 direction)
     {
+        // Debug.Log($"[GoatController] Move() executed on {gameObject.name} with direction: {direction}");
         moveDirection = direction;
     }
 
     public void Attack()
     {
-        // Debug.Log("Charge Action Triggered!");
+        // Debug.Log($"[GoatController] Attack() executed on {gameObject.name}");
 
         // Don't charge if already charging or stamina does not allow it
         if (!isCharging && (currentStamina >= chargeStaminaCost) && (currentStamina > 0))
         {
-            StartCoroutine(ChargeAttack());
+            if (chargeAttackCoroutine != null)
+                StopCoroutine(chargeAttackCoroutine);
+            chargeAttackCoroutine = StartCoroutine(ChargeAttack());
 
             if (staminaRegenCoroutine != null)
                 StopCoroutine(staminaRegenCoroutine);
@@ -190,12 +382,14 @@ public class GoatController : MonoBehaviour
 
     public void Dodge(Vector2 direction)
     {
-        // Debug.Log("Dodge Action Triggered!");
+        // Debug.Log($"[GoatController] Dodge() executed on {gameObject.name} with direction: {direction}");
 
-        // Don't dodge if already dodging or stamina does not allow it
-        if (!isDodging && (currentStamina >= dodgeStaminaCost) && (currentStamina > 0))
+        // Don't dodge if already dodging, not grounded (jumping), or stamina does not allow it
+        if (!isDodging && isGrounded && (currentStamina >= dodgeStaminaCost) && (currentStamina > 0))
         {
-            StartCoroutine(DodgeAnimation());
+            if (dodgeAnimationCoroutine != null)
+                StopCoroutine(dodgeAnimationCoroutine);
+            dodgeAnimationCoroutine = StartCoroutine(DodgeAnimation());
 
             if (staminaRegenCoroutine != null)
                 StopCoroutine(staminaRegenCoroutine);
@@ -206,7 +400,8 @@ public class GoatController : MonoBehaviour
 
     public void Brace(bool shouldBrace)
     {
-        if (shouldBrace == isBraced) return;
+        // Debug.Log($"[GoatController] Brace() executed on {gameObject.name} with shouldBrace: {shouldBrace}");
+        if (shouldBrace == isBraced || !isGrounded) return;
 
         // If trying to brace but not enough stamina, prevent it
         if (shouldBrace && currentStamina < braceInitialCost)
@@ -255,13 +450,14 @@ public class GoatController : MonoBehaviour
 
     public void Jump()
     {
+        // Debug.Log($"[GoatController] Jump() executed on {gameObject.name}");
         jumpRequested = true;
     }
 
     private void TryProcessJump()
     {
         if (!jumpRequested) return;
-
+        
         // Clear request immediately to prevent it from lingering
         jumpRequested = false;
 
@@ -272,6 +468,7 @@ public class GoatController : MonoBehaviour
 
         if (currentStamina < jumpStaminaCost) return;
 
+        // Debug.Log($"[GoatController] TryProcessJump() - Jump executed on {gameObject.name}");
         // Execute the jump 
         currentStamina -= jumpStaminaCost;
         if (staminaBar != null)
@@ -293,6 +490,7 @@ public class GoatController : MonoBehaviour
 
     private IEnumerator ChargeAttack()
     {
+        // Debug.Log($"[GoatController] ChargeAttack() coroutine started on {gameObject.name}");
         isCharging = true;
         float attackDirection = attackToTheRight ? 1f : -1f;
 
@@ -312,10 +510,12 @@ public class GoatController : MonoBehaviour
         rb.linearVelocity = new Vector3(rb.linearVelocity.x * 0.5f, rb.linearVelocity.y, rb.linearVelocity.z * 0.5f);
 
         isCharging = false;
+        chargeAttackCoroutine = null;
     }
 
     private IEnumerator DodgeAnimation()
     {
+        // Debug.Log($"[GoatController] DodgeAnimation() coroutine started on {gameObject.name}");
         isDodging = true;
 
         // Stamina cost for making the dodge
@@ -346,11 +546,13 @@ public class GoatController : MonoBehaviour
         }
 
         isDodging = false;
+        dodgeAnimationCoroutine = null;
         // The Update method will handle returning to z=0
     }
 
     private IEnumerator RechargeStamina()
     {
+        // Debug.Log($"[GoatController] RechargeStamina() coroutine started on {gameObject.name}");
         yield return new WaitForSeconds(staminaRechargeDelay);
 
         while (currentStamina < maxStamina)
@@ -369,6 +571,7 @@ public class GoatController : MonoBehaviour
 
     private IEnumerator DrainStaminaWhileBracing()
     {
+        // Debug.Log($"[GoatController] DrainStaminaWhileBracing() coroutine started on {gameObject.name}");
         while (isBraced && currentStamina > 0)
         {
             currentStamina -= braceDrainRate / 10f;
@@ -389,8 +592,111 @@ public class GoatController : MonoBehaviour
 
     public void ResetStamina()
     {
+        // Debug.Log($"[GoatController] ResetStamina() executed on {gameObject.name}");
         currentStamina = 100f;
         if (staminaBar != null)
             staminaBar.fillAmount = 1f;
+    }
+
+    /// <summary>
+    /// Called every frame while this goat is colliding with another object
+    /// If we're attacking and colliding with opponent, notify them they're being attacked
+    /// </summary>
+    private void OnCollisionStay(Collision collision)
+    {
+        // Check if we're colliding with the opponent
+        if (opponent != null && collision.gameObject.transform == opponent)
+        {
+            // If we're currently attacking (charging), notify the opponent
+            if (isCharging)
+            {
+                GoatController opponentController = opponent.GetComponent<GoatController>();
+                if (opponentController != null)
+                {
+                    opponentController.BeingAttacked(this);
+                }
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Called when collision with opponent ends
+    /// Clear the attacker reference
+    /// </summary>
+    private void OnCollisionExit(Collision collision)
+    {
+        // Check if we stopped colliding with the opponent
+        if (opponent != null && collision.gameObject.transform == opponent)
+        {
+            // Clear attacker if it was the opponent
+            if (currentAttacker != null && currentAttacker.transform == opponent)
+            {
+                currentAttacker = null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Called when this goat is being attacked by the opponent
+    /// Sets the attacker reference so force can be applied in FixedUpdate
+    /// </summary>
+    /// <param name="attacker">The GoatController of the goat attacking us</param>
+    public void BeingAttacked(GoatController attacker)
+    {
+        if (attacker == null) return;
+
+        // Only track attacker if they're currently charging (attacking)
+        if (attacker.IsCharging)
+        {
+            currentAttacker = attacker;
+        }
+        else
+        {
+            // Clear attacker if they're no longer attacking
+            if (currentAttacker == attacker)
+            {
+                currentAttacker = null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Applies push force from the current attacker
+    /// Called in FixedUpdate for consistent physics timestep
+    /// </summary>
+    private void ApplyAttackPush()
+    {
+        if (currentAttacker == null) return;
+
+        // Verify attacker is still charging
+        if (!currentAttacker.IsCharging)
+        {
+            Debug.Log("Attacker is not charging, clearing attacker");
+            currentAttacker = null;
+            return;
+        }
+
+        // Calculate effective push force
+        // If we're bracing, reduce push force significantly
+        float effectivePushForce = pushForce;
+        if (isBraced)
+        {
+            effectivePushForce *= 0.3f; // Reduce push force by 70% when bracing
+        }
+
+        // Calculate push direction based on attacker's attack direction
+        // Use attacker's attack direction for more predictable pushes
+        // If attacker is attacking to the right, push us to the right (positive X)
+        // If attacker is attacking to the left, push us to the left (negative X)
+        float attackerAttackDirection = currentAttacker.AttackToTheRight ? 1f : -1f;
+        Vector3 pushDirection = new Vector3(attackerAttackDirection, 0f, 0f).normalized;
+
+        // Apply push force directly to velocity for immediate effect
+        // This ensures the push happens even if other forces are applied
+        Vector3 currentVel = rb.linearVelocity;
+        Vector3 pushVelocity = pushDirection * effectivePushForce * Time.fixedDeltaTime;
+        rb.linearVelocity = new Vector3(currentVel.x + pushVelocity.x, currentVel.y, currentVel.z);
+        
+        Debug.Log($"Pushed by {effectivePushForce} in direction {pushDirection}, new X velocity: {rb.linearVelocity.x}");
     }
 }
