@@ -170,14 +170,15 @@ public class AiGoatScript : Agent
         // --- Discrete Actions: Combat Actions (4 actions) ---
         // 0: No action, 1: Attack, 2: Dodge, 3: Jump, 4: Brace
         int actionType = actions.DiscreteActions[0];
+        string actionName = "";
         switch (actionType)
         {
-            case 1: goatController.Attack(); break; // Debug.Log("Attack triggered"); break;
-            case 2: goatController.Dodge(moveDirection); break; // Debug.Log("Dodge triggered"); break;
-            case 3: goatController.Jump(); break; // Debug.Log("Jump triggered"); break;
-            case 4: goatController.Brace(true); break; // Debug.Log("Brace triggered"); break;
-            case 0: break;         
-            default: break;
+            case 1: goatController.Attack(); actionName = "Attack"; break; // Debug.Log("Attack triggered"); break;
+            case 2: goatController.Dodge(moveDirection); actionName = "Dodge"; break; // Debug.Log("Dodge triggered"); break;
+            case 3: goatController.Jump(); actionName = "Jump"; break; // Debug.Log("Jump triggered"); break;
+            case 4: goatController.Brace(true); actionName = "Brace"; break; // Debug.Log("Brace triggered"); break;
+            case 0: actionName = "No action"; break;         
+            default: actionName = "No action"; break;
         }
         // Debug.Log("stamina: " + goatController.currentStamina + " grounded: " + goatController.IsGrounded);
 
@@ -190,10 +191,10 @@ public class AiGoatScript : Agent
 
         // --- Penalty for Jumping (Discourage unnecessary jumping) ---
         // Apply penalty when the goat is not grounded (jumping or in the air)
-        if (!goatController.IsGrounded)
-        {
-            AddReward(-0.005f); // Small penalty for being in the air
-        }
+        // if (!goatController.IsGrounded)
+        // {
+        //     AddReward(-0.005f); // Small penalty for being in the air
+        // }
 
         // --- Penalty for Being Near Edge (Self-Preservation) ---
         float distanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
@@ -268,7 +269,7 @@ public class AiGoatScript : Agent
         //  - Brace should be rewarded if it avoids the opponent's attack
         //  - If the AI is hit, the AI should be penalized
 
-        // Debug.Log("Total reward: " + GetCumulativeReward());
+        // Debug.Log("Movement: " + moveDirection + " Action: " + actionName + " Total reward: " + GetCumulativeReward());
     }
 
     /// <summary>

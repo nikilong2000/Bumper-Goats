@@ -910,7 +910,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 440613385}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8f96831e119745f283c6681a867b163, type: 3}
   m_Name: 
@@ -978,10 +978,18 @@ MonoBehaviour:
   moveSpeed: 16
   chargeForce: 200
   chargeDuration: 0.7
-  pushForce: 300
-  jumpForce: 120
+  pushInitialVelocity: 30
+  pushAcceleration: 120
+  maxPushVelocity: 200
+  pushDuration: 0.5
+  jumpAcceleration: 70
+  jumpDuration: 0.4
+  gravityScale: 1.75
+  fallMultiplier: 10
+  lowJumpMultiplier: 2
   platform: {fileID: 177101841}
   groundCheckRadius: 0.25
+  groundCheckSinkTolerance: 0.5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -997,7 +1005,7 @@ MonoBehaviour:
   staminaBar: {fileID: 324699390}
   currentStamina: 100
   maxStamina: 100
-  staminaRegenRate: 0
+  staminaRegenRate: 1
   jumpCooldown: 0.05
 --- !u!1 &503073146
 GameObject:
@@ -2119,7 +2127,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1316124915}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2675829237ac94dd285d1ba3839731bb, type: 3}
   m_Name: 
@@ -2227,10 +2235,18 @@ MonoBehaviour:
   moveSpeed: 16
   chargeForce: 200
   chargeDuration: 0.7
-  pushForce: 300
-  jumpForce: 120
+  pushInitialVelocity: 30
+  pushAcceleration: 120
+  maxPushVelocity: 200
+  pushDuration: 0.5
+  jumpAcceleration: 70
+  jumpDuration: 0.4
+  gravityScale: 1.75
+  fallMultiplier: 10
+  lowJumpMultiplier: 2
   platform: {fileID: 177101841}
   groundCheckRadius: 0.25
+  groundCheckSinkTolerance: 0.5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -2263,7 +2279,7 @@ MonoBehaviour:
   agentParameters:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
-  MaxStep: 0
+  MaxStep: 1
 --- !u!4 &1490141256 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3078002635957609246, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
@@ -2999,10 +3015,18 @@ MonoBehaviour:
   moveSpeed: 5
   chargeForce: 30
   chargeDuration: 0.7
-  pushForce: 300
-  jumpForce: 6
+  pushInitialVelocity: 30
+  pushAcceleration: 15
+  maxPushVelocity: 25
+  pushDuration: 0.5
+  jumpAcceleration: 200
+  jumpDuration: 0.2
+  gravityScale: 0.5
+  fallMultiplier: 10
+  lowJumpMultiplier: 2
   platform: {fileID: 0}
   groundCheckRadius: 0.25
+  groundCheckSinkTolerance: 0.5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
