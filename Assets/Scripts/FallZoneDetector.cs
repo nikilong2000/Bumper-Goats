@@ -36,18 +36,18 @@ public class FallZoneDetector : MonoBehaviour
                 if (aiActive) {
                     // during ai training self-train
                     AiGoatScript aiGoatScript = aiGo.GetComponent<AiGoatScript>();
-                    // AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
+                    AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
                     if (aiGoatScript != null) aiGoatScript.OnOpponentFellOff();
-                    // if (ai2GoatScript != null) ai2GoatScript.OnAIFellOff();
+                    if (ai2GoatScript != null) ai2GoatScript.OnAIFellOff();
                 }
             } else if (other.CompareTag(aiTag)){
                 Debug.Log("AI fell off");
                 if (aiActive) {
                     // during ai training self-train
                     AiGoatScript aiGoatScript = aiGo.GetComponent<AiGoatScript>();
-                    // AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
+                    AiGoatScript ai2GoatScript = playerGo.GetComponent<AiGoatScript>();
                     if (aiGoatScript != null) aiGoatScript.OnAIFellOff();
-                    // if (ai2GoatScript != null) ai2GoatScript.OnOpponentFellOff();
+                    if (ai2GoatScript != null) ai2GoatScript.OnOpponentFellOff();
                 }
             }
         }

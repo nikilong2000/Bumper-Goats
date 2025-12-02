@@ -358,178 +358,178 @@ public class AiGoatScript : Agent
             else if (timeSinceAttack > attackTimeout)
             {
                 // Attack timed out without hitting - penalize
-                // AddReward(-0.1f);
-                // attackExecuted = false;
-                // attackStartTime = -1f;
+                AddReward(-0.01f);
+                attackExecuted = false;
+                attackStartTime = -1f;
             }
             // If still charging, keep tracking
             else if (!goatController.IsCharging)
             {
                 // Attack ended without hitting
-                // AddReward(-0.1f);
-                // attackExecuted = false;
-                // attackStartTime = -1f;
+                AddReward(-0.01f);
+                attackExecuted = false;
+                attackStartTime = -1f;
             }
         }
 
         // --- Reward/Penalize Dodge Action ---
-        // if (dodgeExecuted && dodgeStartTime >= 0)
-        // {
-        //     float timeSinceDodge = Time.time - dodgeStartTime;
+        if (dodgeExecuted && dodgeStartTime >= 0)
+        {
+            float timeSinceDodge = Time.time - dodgeStartTime;
             
-        //     if (timeSinceDodge <= dodgeTimeout)
-        //     {
-        //         // Check if dodge successfully avoided attack
-        //         if (opponentWasAttackingWhenDodged && !wasHitThisFrame)
-        //         {
-        //             // Successfully dodged an attack - reward
-        //             AddReward(0.2f);
-        //             dodgeExecuted = false;
-        //             dodgeStartTime = -1f;
-        //             opponentWasAttackingWhenDodged = false;
-        //         }
-        //         else if (opponentWasAttackingWhenDodged && wasHitThisFrame)
-        //         {
-        //             // Tried to dodge but still got hit - small penalty
-        //             AddReward(-0.05f);
-        //             dodgeExecuted = false;
-        //             dodgeStartTime = -1f;
-        //             opponentWasAttackingWhenDodged = false;
-        //         }
-        //     }
-        //     else
-        //     {
-        //         // Dodge timeout - evaluate result
-        //         if (opponentWasAttackingWhenDodged)
-        //         {
-        //             // Dodged when opponent was attacking - check if we avoided it
-        //             if (!wasHitThisFrame)
-        //             {
-        //                 // Successfully avoided - reward
-        //                 AddReward(0.15f);
-        //             }
-        //             else
-        //             {
-        //                 // Still got hit - small penalty
-        //                 AddReward(-0.05f);
-        //             }
-        //         }
-        //         else
-        //         {
-        //             // Dodged when opponent wasn't attacking - small penalty for unnecessary action
-        //             AddReward(-0.02f);
-        //         }
-        //         dodgeExecuted = false;
-        //         dodgeStartTime = -1f;
-        //         opponentWasAttackingWhenDodged = false;
-        //     }
-        // }
+            if (timeSinceDodge <= dodgeTimeout)
+            {
+                // Check if dodge successfully avoided attack
+                if (opponentWasAttackingWhenDodged && !wasHitThisFrame)
+                {
+                    // Successfully dodged an attack - reward
+                    AddReward(0.2f);
+                    dodgeExecuted = false;
+                    dodgeStartTime = -1f;
+                    opponentWasAttackingWhenDodged = false;
+                }
+                else if (opponentWasAttackingWhenDodged && wasHitThisFrame)
+                {
+                    // Tried to dodge but still got hit - small penalty
+                    AddReward(-0.05f);
+                    dodgeExecuted = false;
+                    dodgeStartTime = -1f;
+                    opponentWasAttackingWhenDodged = false;
+                }
+            }
+            else
+            {
+                // Dodge timeout - evaluate result
+                if (opponentWasAttackingWhenDodged)
+                {
+                    // Dodged when opponent was attacking - check if we avoided it
+                    if (!wasHitThisFrame)
+                    {
+                        // Successfully avoided - reward
+                        AddReward(0.15f);
+                    }
+                    else
+                    {
+                        // Still got hit - small penalty
+                        AddReward(-0.05f);
+                    }
+                }
+                else
+                {
+                    // Dodged when opponent wasn't attacking - small penalty for unnecessary action
+                    AddReward(-0.002f);
+                }
+                dodgeExecuted = false;
+                dodgeStartTime = -1f;
+                opponentWasAttackingWhenDodged = false;
+            }
+        }
 
         // --- Reward/Penalize Jump Action ---
-        // if (jumpExecuted && jumpStartTime >= 0)
-        // {
-        //     float timeSinceJump = Time.time - jumpStartTime;
+        if (jumpExecuted && jumpStartTime >= 0)
+        {
+            float timeSinceJump = Time.time - jumpStartTime;
             
-        //     if (timeSinceJump <= jumpTimeout)
-        //     {
-        //         // Check if jump successfully avoided attack
-        //         if (opponentWasAttackingWhenJumped && !wasHitThisFrame)
-        //         {
-        //             // Successfully jumped to avoid attack - reward
-        //             AddReward(0.2f);
-        //             jumpExecuted = false;
-        //             jumpStartTime = -1f;
-        //             opponentWasAttackingWhenJumped = false;
-        //         }
-        //         else if (opponentWasAttackingWhenJumped && wasHitThisFrame)
-        //         {
-        //             // Tried to jump but still got hit - small penalty
-        //             AddReward(-0.05f);
-        //             jumpExecuted = false;
-        //             jumpStartTime = -1f;
-        //             opponentWasAttackingWhenJumped = false;
-        //         }
-        //     }
-        //     else
-        //     {
-        //         // Jump timeout - evaluate result
-        //         if (opponentWasAttackingWhenJumped)
-        //         {
-        //             // Jumped when opponent was attacking - check if we avoided it
-        //             if (!wasHitThisFrame)
-        //             {
-        //                 // Successfully avoided - reward
-        //                 AddReward(0.15f);
-        //             }
-        //             else
-        //             {
-        //                 // Still got hit - small penalty
-        //                 AddReward(-0.05f);
-        //             }
-        //         }
-        //         else
-        //         {
-        //             // Jumped when opponent wasn't attacking - small penalty for unnecessary action
-        //             AddReward(-0.02f);
-        //         }
-        //         jumpExecuted = false;
-        //         jumpStartTime = -1f;
-        //         opponentWasAttackingWhenJumped = false;
-        //     }
-        // }
+            if (timeSinceJump <= jumpTimeout)
+            {
+                // Check if jump successfully avoided attack
+                if (opponentWasAttackingWhenJumped && !wasHitThisFrame)
+                {
+                    // Successfully jumped to avoid attack - reward
+                    AddReward(0.2f);
+                    jumpExecuted = false;
+                    jumpStartTime = -1f;
+                    opponentWasAttackingWhenJumped = false;
+                }
+                else if (opponentWasAttackingWhenJumped && wasHitThisFrame)
+                {
+                    // Tried to jump but still got hit - small penalty
+                    AddReward(-0.05f);
+                    jumpExecuted = false;
+                    jumpStartTime = -1f;
+                    opponentWasAttackingWhenJumped = false;
+                }
+            }
+            else
+            {
+                // Jump timeout - evaluate result
+                if (opponentWasAttackingWhenJumped)
+                {
+                    // Jumped when opponent was attacking - check if we avoided it
+                    if (!wasHitThisFrame)
+                    {
+                        // Successfully avoided - reward
+                        AddReward(0.15f);
+                    }
+                    else
+                    {
+                        // Still got hit - small penalty
+                        AddReward(-0.05f);
+                    }
+                }
+                else
+                {
+                    // Jumped when opponent wasn't attacking - small penalty for unnecessary action
+                    AddReward(-0.02f);
+                }
+                jumpExecuted = false;
+                jumpStartTime = -1f;
+                opponentWasAttackingWhenJumped = false;
+            }
+        }
 
         // --- Reward/Penalize Brace Action ---
-        // if (braceExecuted && braceStartTime >= 0)
-        // {
-        //     float timeSinceBrace = Time.time - braceStartTime;
-        //     bool opponentCurrentlyAttacking = (opponentController != null && opponentController.IsCharging);
+        if (braceExecuted && braceStartTime >= 0)
+        {
+            float timeSinceBrace = Time.time - braceStartTime;
+            bool opponentCurrentlyAttacking = (opponentController != null && opponentController.IsCharging);
             
-        //     if (goatController.IsBraced)
-        //     {
-        //         // Still bracing - check if it's helping avoid damage
-        //         if (opponentWasAttackingWhenBraced && wasHitThisFrame)
-        //         {
-        //             // Being hit while bracing - check if brace reduced damage
-        //             // If we're still on platform and not being pushed much, brace helped
-        //             float braceDistanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
-        //             if (braceDistanceFromCenter < GetPlatformRadius() * 0.8f)
-        //             {
-        //                 // Brace helped reduce push - small reward
-        //                 AddReward(0.1f);
-        //             }
-        //         }
-        //         else if (opponentWasAttackingWhenBraced && !wasHitThisFrame)
-        //         {
-        //             // Bracing and avoiding attack - reward
-        //             AddReward(0.15f);
-        //         }
-        //     }
-        //     else
-        //     {
-        //         // Stopped bracing - evaluate if it was successful
-        //         if (timeSinceBrace <= braceTimeout)
-        //         {
-        //             if (opponentWasAttackingWhenBraced && !wasHitThisFrame)
-        //             {
-        //                 // Successfully braced to avoid attack - reward
-        //                 AddReward(0.2f);
-        //             }
-        //             else if (opponentWasAttackingWhenBraced && wasHitThisFrame)
-        //             {
-        //                 // Braced but still got hit - small penalty
-        //                 AddReward(-0.05f);
-        //             }
-        //             else if (!opponentWasAttackingWhenBraced)
-        //             {
-        //                 // Braced when opponent wasn't attacking - small penalty for unnecessary action
-        //                 AddReward(-0.02f);
-        //             }
-        //         }
-        //         braceExecuted = false;
-        //         braceStartTime = -1f;
-        //         opponentWasAttackingWhenBraced = false;
-        //     }
-        // }
+            if (goatController.IsBraced)
+            {
+                // Still bracing - check if it's helping avoid damage
+                if (opponentWasAttackingWhenBraced && wasHitThisFrame)
+                {
+                    // Being hit while bracing - check if brace reduced damage
+                    // If we're still on platform and not being pushed much, brace helped
+                    float braceDistanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
+                    if (braceDistanceFromCenter < GetPlatformRadius() * 0.8f)
+                    {
+                        // Brace helped reduce push - small reward
+                        AddReward(0.1f);
+                    }
+                }
+                else if (opponentWasAttackingWhenBraced && !wasHitThisFrame)
+                {
+                    // Bracing and avoiding attack - reward
+                    AddReward(0.15f);
+                }
+            }
+            else
+            {
+                // Stopped bracing - evaluate if it was successful
+                if (timeSinceBrace <= braceTimeout)
+                {
+                    if (opponentWasAttackingWhenBraced && !wasHitThisFrame)
+                    {
+                        // Successfully braced to avoid attack - reward
+                        AddReward(0.2f);
+                    }
+                    else if (opponentWasAttackingWhenBraced && wasHitThisFrame)
+                    {
+                        // Braced but still got hit - small penalty
+                        AddReward(-0.05f);
+                    }
+                    else if (!opponentWasAttackingWhenBraced)
+                    {
+                        // Braced when opponent wasn't attacking - small penalty for unnecessary action
+                        AddReward(-0.02f);
+                    }
+                }
+                braceExecuted = false;
+                braceStartTime = -1f;
+                opponentWasAttackingWhenBraced = false;
+            }
+        }
 
         Debug.Log("Movement: " + moveDirection + " Action: " + actionName + " Total reward: " + GetCumulativeReward());
     }
