@@ -1060,7 +1060,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &440613387
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1206,10 +1206,10 @@ MonoBehaviour:
   moveSpeed: 16
   chargeForce: 200
   chargeDuration: 0.7
-  pushInitialVelocity: 30
-  pushAcceleration: 120
-  maxPushVelocity: 200
-  pushDuration: 0.5
+  pushInitialVelocity: 100
+  pushAcceleration: 300
+  maxPushVelocity: 400
+  pushDuration: 1
   jumpAcceleration: 70
   jumpDuration: 0.4
   gravityScale: 1.75
@@ -2521,6 +2521,7 @@ MonoBehaviour:
   opponentTransform: {fileID: 1998951015}
   platformTransform: {fileID: 778215492}
   platformRadius: 7.5
+  maxEpisodeTime: 60
 --- !u!114 &1316124924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2543,9 +2544,9 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: d18f6d967507147e1ae2d15eb93fc419, type: 3}
   m_InferenceDevice: 0
-  m_BehaviorType: 0
+  m_BehaviorType: 2
   m_BehaviorName: Goat
   TeamId: 0
   m_UseChildSensors: 1
@@ -2617,10 +2618,10 @@ MonoBehaviour:
   moveSpeed: 16
   chargeForce: 200
   chargeDuration: 0.7
-  pushInitialVelocity: 30
-  pushAcceleration: 120
-  maxPushVelocity: 200
-  pushDuration: 0.5
+  pushInitialVelocity: 100
+  pushAcceleration: 300
+  maxPushVelocity: 400
+  pushDuration: 1
   jumpAcceleration: 70
   jumpDuration: 0.4
   gravityScale: 1.75
@@ -3477,7 +3478,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1998951005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3638,6 +3639,7 @@ MonoBehaviour:
   opponentTransform: {fileID: 1316124919}
   platformTransform: {fileID: 190951491}
   platformRadius: 7.5
+  maxEpisodeTime: 60
 --- !u!54 &1998951012
 Rigidbody:
   m_ObjectHideFlags: 0

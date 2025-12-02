@@ -46,6 +46,11 @@ public class AiGoatScript : Agent
     private bool wasHitThisFrame = false;
     private bool wasHitLastFrame = false;
 
+    [Header("Episode Settings")]
+    [SerializeField] private float maxEpisodeTime = 60f; // Maximum episode time in seconds
+
+    private float episodeStartTime;
+
     /// <summary>
     /// Called once when the agent is first initialized
     /// </summary>
@@ -69,6 +74,7 @@ public class AiGoatScript : Agent
     /// </summary>
     public override void OnEpisodeBegin()
     {
+        episodeStartTime = Time.time; // Track when episode started
         // Reset AI goat position and physics
         goatController.Reset();
         if (opponentTransform != null)
@@ -200,6 +206,16 @@ public class AiGoatScript : Agent
     /// </summary>
     public override void OnActionReceived(ActionBuffers actions)
     {
+        // Check if episode has exceeded maximum time
+        float elapsedTime = Time.time - episodeStartTime;
+        if (elapsedTime >= maxEpisodeTime)
+        {
+            // End episode due to timeout - give neutral/small negative reward
+            AddReward(-0.1f);
+            EndEpisode();
+            return;
+        }
+
         // --- Continuous Actions: Movement (2 actions) ---
         // Range: -1 to +1 for each axis
         float moveX = actions.ContinuousActions[0];
