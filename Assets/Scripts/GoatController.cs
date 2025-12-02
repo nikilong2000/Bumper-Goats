@@ -61,7 +61,7 @@ public class GoatController : MonoBehaviour
     private Coroutine chargeAttackCoroutine;
     private Coroutine dodgeAnimationCoroutine;
     private float staminaRechargeDelay = 2f; // Delay before stamina starts recharging
-    private float staminaRechargeRate = 5f; // Stamina points per second
+    private float staminaRechargeRate = 15f; // Stamina points per second
 
     // Internal state
     private Rigidbody rb;
@@ -83,6 +83,8 @@ public class GoatController : MonoBehaviour
     public bool IsBraced => isBraced;
     public bool IsDodging => isDodging;
     public bool AttackToTheRight => attackToTheRight; // Getter for attack direction
+    public bool IsBeingAttacked => currentAttacker != null; // Getter to check if being attacked
+    public GoatController CurrentAttacker => currentAttacker; // Getter for current attacker
 
     private bool isJumping = false;
     private float jumpStartTime = -1f;
@@ -575,17 +577,15 @@ public class GoatController : MonoBehaviour
             isGrounded = true;
         }
         
-        // Check if we're colliding with the opponent
-        if (opponent != null && collision.gameObject.transform == opponent)
+        // Check if we're colliding with another goat (opponent)
+        // More robust: check for GoatController component instead of relying on opponent reference
+        GoatController otherGoat = collision.gameObject.GetComponent<GoatController>();
+        if (otherGoat != null && otherGoat != this)
         {
             // If we're currently attacking (charging), notify the opponent
             if (isCharging)
             {
-                GoatController opponentController = opponent.GetComponent<GoatController>();
-                if (opponentController != null)
-                {
-                    opponentController.BeingAttacked(this);
-                }
+                otherGoat.BeingAttacked(this);
             }
         }
     }
@@ -599,17 +599,15 @@ public class GoatController : MonoBehaviour
             isGrounded = true;
         }
         
-        // Check if we're colliding with the opponent
-        if (opponent != null && collision.gameObject.transform == opponent)
+        // Check if we're colliding with another goat (opponent)
+        // More robust: check for GoatController component instead of relying on opponent reference
+        GoatController otherGoat = collision.gameObject.GetComponent<GoatController>();
+        if (otherGoat != null && otherGoat != this)
         {
             // If we're currently attacking (charging), notify the opponent
             if (isCharging)
             {
-                GoatController opponentController = opponent.GetComponent<GoatController>();
-                if (opponentController != null)
-                {
-                    opponentController.BeingAttacked(this);
-                }
+                otherGoat.BeingAttacked(this);
             }
         }
     }
@@ -627,11 +625,12 @@ public class GoatController : MonoBehaviour
             isGrounded = false;
         }
         
-        // Check if we stopped colliding with the opponent
-        if (opponent != null && collision.gameObject.transform == opponent)
+        // Check if we stopped colliding with another goat (opponent)
+        GoatController otherGoat = collision.gameObject.GetComponent<GoatController>();
+        if (otherGoat != null && otherGoat != this)
         {
-            // Clear attacker if it was the opponent
-            if (currentAttacker != null && currentAttacker.transform == opponent)
+            // Clear attacker if it was this opponent
+            if (currentAttacker != null && currentAttacker == otherGoat)
             {
                 currentAttacker = null;
             }

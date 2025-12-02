@@ -23,6 +23,29 @@ public class AiGoatScript : Agent
     // Agent field
     // private bool _aiBracing = false;
 
+    // Action tracking for rewards
+    private bool attackExecuted = false;
+    private float attackStartTime = -1f;
+    private float attackTimeout = 1.5f; // Time window to check if attack hit
+    
+    private bool dodgeExecuted = false;
+    private float dodgeStartTime = -1f;
+    private float dodgeTimeout = 0.5f; // Time window to check if dodge avoided attack
+    private bool opponentWasAttackingWhenDodged = false;
+    
+    private bool jumpExecuted = false;
+    private float jumpStartTime = -1f;
+    private float jumpTimeout = 0.5f; // Time window to check if jump avoided attack
+    private bool opponentWasAttackingWhenJumped = false;
+    
+    private bool braceExecuted = false;
+    private float braceStartTime = -1f;
+    private float braceTimeout = 1.0f; // Time window to check if brace avoided attack
+    private bool opponentWasAttackingWhenBraced = false;
+    
+    private bool wasHitThisFrame = false;
+    private bool wasHitLastFrame = false;
+
     /// <summary>
     /// Called once when the agent is first initialized
     /// </summary>
@@ -56,16 +79,33 @@ public class AiGoatScript : Agent
         } else {
             previousOpponentPosition = Vector3.zero;
         }
+        
+        // Reset action tracking
+        attackExecuted = false;
+        attackStartTime = -1f;
+        dodgeExecuted = false;
+        dodgeStartTime = -1f;
+        opponentWasAttackingWhenDodged = false;
+        jumpExecuted = false;
+        jumpStartTime = -1f;
+        opponentWasAttackingWhenJumped = false;
+        braceExecuted = false;
+        braceStartTime = -1f;
+        opponentWasAttackingWhenBraced = false;
+        wasHitThisFrame = false;
+        wasHitLastFrame = false;
     }
 
     /// <summary>
     /// Collect observations - this is what the AI "sees"
     /// Think of this as the AI's sensory input
-    /// Total observations: 15 values
+    /// Total observations: 25 values
+    /// - Self-awareness: 14 (position, velocity, distance, forward, states, stamina)
+    /// - Opponent awareness: 11 (direction, velocity, states, distance)
     /// </summary>
     public override void CollectObservations(VectorSensor sensor)
-    {
-        // --- AI's Self-Awareness (9 observations) ---
+    {   
+        // --- AI's Self-Awareness (14 observations) ---
 
         // 1. AI's position relative to platform center (3 values: x, y, z)
         // This helps the AI know where it is on the platform
@@ -139,6 +179,7 @@ public class AiGoatScript : Agent
                 sensor.AddObservation(0f); // Opponent state information
             }
         }
+        
     }
 
     private float GetPlatformRadius()
@@ -173,10 +214,52 @@ public class AiGoatScript : Agent
         string actionName = "";
         switch (actionType)
         {
-            case 1: goatController.Attack(); actionName = "Attack"; break; // Debug.Log("Attack triggered"); break;
-            case 2: goatController.Dodge(moveDirection); actionName = "Dodge"; break; // Debug.Log("Dodge triggered"); break;
-            case 3: goatController.Jump(); actionName = "Jump"; break; // Debug.Log("Jump triggered"); break;
-            case 4: goatController.Brace(true); actionName = "Brace"; break; // Debug.Log("Brace triggered"); break;
+            case 1: 
+                goatController.Attack(); 
+                actionName = "Attack";
+                // Track attack execution
+                if (!attackExecuted || !goatController.IsCharging)
+                {
+                    attackExecuted = true;
+                    attackStartTime = Time.time;
+                }
+                break;
+            case 2: 
+                goatController.Dodge(moveDirection); 
+                actionName = "Dodge";
+                // Track dodge execution
+                if (!dodgeExecuted || !goatController.IsDodging)
+                {
+                    dodgeExecuted = true;
+                    dodgeStartTime = Time.time;
+                    // Record if opponent was attacking when we dodged
+                    opponentWasAttackingWhenDodged = (opponentController != null && opponentController.IsCharging);
+                }
+                break;
+            case 3: 
+                goatController.Jump(); 
+                actionName = "Jump";
+                // Track jump execution
+                if (!jumpExecuted)
+                {
+                    jumpExecuted = true;
+                    jumpStartTime = Time.time;
+                    // Record if opponent was attacking when we jumped
+                    opponentWasAttackingWhenJumped = (opponentController != null && opponentController.IsCharging);
+                }
+                break;
+            case 4: 
+                goatController.Brace(true); 
+                actionName = "Brace";
+                // Track brace execution
+                if (!braceExecuted || !goatController.IsBraced)
+                {
+                    braceExecuted = true;
+                    braceStartTime = Time.time;
+                    // Record if opponent was attacking when we braced
+                    opponentWasAttackingWhenBraced = (opponentController != null && opponentController.IsCharging);
+                }
+                break;
             case 0: actionName = "No action"; break;         
             default: actionName = "No action"; break;
         }
@@ -188,13 +271,6 @@ public class AiGoatScript : Agent
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
         AddReward(-0.001f);
-
-        // --- Penalty for Jumping (Discourage unnecessary jumping) ---
-        // Apply penalty when the goat is not grounded (jumping or in the air)
-        // if (!goatController.IsGrounded)
-        // {
-        //     AddReward(-0.005f); // Small penalty for being in the air
-        // }
 
         // --- Penalty for Being Near Edge (Self-Preservation) ---
         float distanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
@@ -216,16 +292,6 @@ public class AiGoatScript : Agent
             float proximityReward = 0.02f / (1.0f + distanceToOpponent);
             AddReward(proximityReward);
 
-            // Opponent positioning advantage
-            // float opponentDistFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
-            // float opponentDistToEdge = GetPlatformRadius() - opponentDistFromCenter;
-            
-            // Reward when opponent is closer to edge than you are
-            // if (opponentDistToEdge < distanceToEdge)
-            // {
-            //     float advantage = (distanceToEdge - opponentDistToEdge) / GetPlatformRadius();
-            //     AddReward(0.1f * advantage); // Increased from 0.05f
-            // }
             
             // Reward if opponent has been moved away and towards the edge
             Vector3 opponentMovement = opponentTransform.position - previousOpponentPosition;
@@ -262,14 +328,210 @@ public class AiGoatScript : Agent
             previousOpponentPosition = opponentTransform.position;
         }
 
-        // TODO: Reward for executing actions successfully:
-        //  - Attack should be rewarded if it hits the opponent
-        //  - Dodge should be rewarded if it avoids the opponent's attack
-        //  - Jump should be rewarded if it avoids the opponent's attack
-        //  - Brace should be rewarded if it avoids the opponent's attack
-        //  - If the AI is hit, the AI should be penalized
+        // --- Check if AI was hit this frame ---
+        wasHitThisFrame = (goatController.IsBeingAttacked && opponentController != null && 
+                          goatController.CurrentAttacker == opponentController);
+        
+        // Penalize AI for being hit
+        if (wasHitThisFrame && !wasHitLastFrame)
+        {
+            AddReward(-0.5f); // Penalty for getting hit
+        }
+        wasHitLastFrame = wasHitThisFrame;
 
-        // Debug.Log("Movement: " + moveDirection + " Action: " + actionName + " Total reward: " + GetCumulativeReward());
+        // --- Reward/Penalize Attack Action ---
+        if (attackExecuted && attackStartTime >= 0)
+        {
+            float timeSinceAttack = Time.time - attackStartTime;
+            
+            // Check if attack hit (opponent is being attacked by us)
+            bool attackHit = (opponentController != null && opponentController.IsBeingAttacked && 
+                             opponentController.CurrentAttacker == goatController);
+            
+            if (attackHit)
+            {
+                // Reward successful hit
+                AddReward(0.3f);
+                attackExecuted = false; // Reset after successful hit
+                attackStartTime = -1f;
+            }
+            else if (timeSinceAttack > attackTimeout)
+            {
+                // Attack timed out without hitting - penalize
+                // AddReward(-0.1f);
+                // attackExecuted = false;
+                // attackStartTime = -1f;
+            }
+            // If still charging, keep tracking
+            else if (!goatController.IsCharging)
+            {
+                // Attack ended without hitting
+                // AddReward(-0.1f);
+                // attackExecuted = false;
+                // attackStartTime = -1f;
+            }
+        }
+
+        // --- Reward/Penalize Dodge Action ---
+        // if (dodgeExecuted && dodgeStartTime >= 0)
+        // {
+        //     float timeSinceDodge = Time.time - dodgeStartTime;
+            
+        //     if (timeSinceDodge <= dodgeTimeout)
+        //     {
+        //         // Check if dodge successfully avoided attack
+        //         if (opponentWasAttackingWhenDodged && !wasHitThisFrame)
+        //         {
+        //             // Successfully dodged an attack - reward
+        //             AddReward(0.2f);
+        //             dodgeExecuted = false;
+        //             dodgeStartTime = -1f;
+        //             opponentWasAttackingWhenDodged = false;
+        //         }
+        //         else if (opponentWasAttackingWhenDodged && wasHitThisFrame)
+        //         {
+        //             // Tried to dodge but still got hit - small penalty
+        //             AddReward(-0.05f);
+        //             dodgeExecuted = false;
+        //             dodgeStartTime = -1f;
+        //             opponentWasAttackingWhenDodged = false;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         // Dodge timeout - evaluate result
+        //         if (opponentWasAttackingWhenDodged)
+        //         {
+        //             // Dodged when opponent was attacking - check if we avoided it
+        //             if (!wasHitThisFrame)
+        //             {
+        //                 // Successfully avoided - reward
+        //                 AddReward(0.15f);
+        //             }
+        //             else
+        //             {
+        //                 // Still got hit - small penalty
+        //                 AddReward(-0.05f);
+        //             }
+        //         }
+        //         else
+        //         {
+        //             // Dodged when opponent wasn't attacking - small penalty for unnecessary action
+        //             AddReward(-0.02f);
+        //         }
+        //         dodgeExecuted = false;
+        //         dodgeStartTime = -1f;
+        //         opponentWasAttackingWhenDodged = false;
+        //     }
+        // }
+
+        // --- Reward/Penalize Jump Action ---
+        // if (jumpExecuted && jumpStartTime >= 0)
+        // {
+        //     float timeSinceJump = Time.time - jumpStartTime;
+            
+        //     if (timeSinceJump <= jumpTimeout)
+        //     {
+        //         // Check if jump successfully avoided attack
+        //         if (opponentWasAttackingWhenJumped && !wasHitThisFrame)
+        //         {
+        //             // Successfully jumped to avoid attack - reward
+        //             AddReward(0.2f);
+        //             jumpExecuted = false;
+        //             jumpStartTime = -1f;
+        //             opponentWasAttackingWhenJumped = false;
+        //         }
+        //         else if (opponentWasAttackingWhenJumped && wasHitThisFrame)
+        //         {
+        //             // Tried to jump but still got hit - small penalty
+        //             AddReward(-0.05f);
+        //             jumpExecuted = false;
+        //             jumpStartTime = -1f;
+        //             opponentWasAttackingWhenJumped = false;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         // Jump timeout - evaluate result
+        //         if (opponentWasAttackingWhenJumped)
+        //         {
+        //             // Jumped when opponent was attacking - check if we avoided it
+        //             if (!wasHitThisFrame)
+        //             {
+        //                 // Successfully avoided - reward
+        //                 AddReward(0.15f);
+        //             }
+        //             else
+        //             {
+        //                 // Still got hit - small penalty
+        //                 AddReward(-0.05f);
+        //             }
+        //         }
+        //         else
+        //         {
+        //             // Jumped when opponent wasn't attacking - small penalty for unnecessary action
+        //             AddReward(-0.02f);
+        //         }
+        //         jumpExecuted = false;
+        //         jumpStartTime = -1f;
+        //         opponentWasAttackingWhenJumped = false;
+        //     }
+        // }
+
+        // --- Reward/Penalize Brace Action ---
+        // if (braceExecuted && braceStartTime >= 0)
+        // {
+        //     float timeSinceBrace = Time.time - braceStartTime;
+        //     bool opponentCurrentlyAttacking = (opponentController != null && opponentController.IsCharging);
+            
+        //     if (goatController.IsBraced)
+        //     {
+        //         // Still bracing - check if it's helping avoid damage
+        //         if (opponentWasAttackingWhenBraced && wasHitThisFrame)
+        //         {
+        //             // Being hit while bracing - check if brace reduced damage
+        //             // If we're still on platform and not being pushed much, brace helped
+        //             float braceDistanceFromCenter = Vector3.Distance(transform.position, platformTransform.position);
+        //             if (braceDistanceFromCenter < GetPlatformRadius() * 0.8f)
+        //             {
+        //                 // Brace helped reduce push - small reward
+        //                 AddReward(0.1f);
+        //             }
+        //         }
+        //         else if (opponentWasAttackingWhenBraced && !wasHitThisFrame)
+        //         {
+        //             // Bracing and avoiding attack - reward
+        //             AddReward(0.15f);
+        //         }
+        //     }
+        //     else
+        //     {
+        //         // Stopped bracing - evaluate if it was successful
+        //         if (timeSinceBrace <= braceTimeout)
+        //         {
+        //             if (opponentWasAttackingWhenBraced && !wasHitThisFrame)
+        //             {
+        //                 // Successfully braced to avoid attack - reward
+        //                 AddReward(0.2f);
+        //             }
+        //             else if (opponentWasAttackingWhenBraced && wasHitThisFrame)
+        //             {
+        //                 // Braced but still got hit - small penalty
+        //                 AddReward(-0.05f);
+        //             }
+        //             else if (!opponentWasAttackingWhenBraced)
+        //             {
+        //                 // Braced when opponent wasn't attacking - small penalty for unnecessary action
+        //                 AddReward(-0.02f);
+        //             }
+        //         }
+        //         braceExecuted = false;
+        //         braceStartTime = -1f;
+        //         opponentWasAttackingWhenBraced = false;
+        //     }
+        // }
+
+        Debug.Log("Movement: " + moveDirection + " Action: " + actionName + " Total reward: " + GetCumulativeReward());
     }
 
     /// <summary>
@@ -281,14 +543,14 @@ public class AiGoatScript : Agent
         ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
         ActionSegment<int> discreteActions = actionsOut.DiscreteActions;
 
-        // Use arrow keys or WASD to control movement
-        continuousActions[0] = Input.GetAxisRaw("Horizontal"); // A/D or Left/Right
+        // Use A/D or Left/Right arrow keys to control movement (same as player)
+        continuousActions[0] = Input.GetAxisRaw("Horizontal");
 
-        // Use number keys for combat actions
-        if (Input.GetKey(KeyCode.Alpha1)) discreteActions[0] = 1; // Attack
-        else if (Input.GetKey(KeyCode.Alpha2)) discreteActions[0] = 2; // Dodge
-        else if (Input.GetKey(KeyCode.Alpha3)) discreteActions[0] = 3; // Jump
-        else if (Input.GetKey(KeyCode.Alpha4)) discreteActions[0] = 4; // Brace
+        // Use same keys as player controls for combat actions
+        if (Input.GetKey(KeyCode.Space)) discreteActions[0] = 1; // Attack (Space)
+        else if (Input.GetKey(KeyCode.Q)) discreteActions[0] = 2; // Dodge (Q)
+        else if (Input.GetKey(KeyCode.W)) discreteActions[0] = 3; // Jump (W)
+        else if (Input.GetKey(KeyCode.S)) discreteActions[0] = 4; // Brace (S)
         else discreteActions[0] = 0; // No action
     }
 
