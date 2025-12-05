@@ -1260,7 +1260,7 @@ RectTransform:
   m_GameObject: {fileID: 503073146}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 266749808}
@@ -1269,7 +1269,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -2057, y: -301}
+  m_AnchoredPosition: {x: -520, y: -219}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &556075997
@@ -3399,7 +3399,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6856467640846791413, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
       propertyPath: m_Enabled
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6882142242758939594, guid: 6bb69cb0dcf7f45c8b080f90ef208daa, type: 3}
       propertyPath: m_Layer
@@ -3529,7 +3529,7 @@ Transform:
   m_GameObject: {fileID: 1946200311}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12, y: 20.87, z: 9}
+  m_LocalPosition: {x: 12, y: 18.39, z: 9}
   m_LocalScale: {x: 100, y: 1, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3547,10 +3547,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d14ad2e4bb6dc43119499a9e31a5e8cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerRespawnPoint: {fileID: 1088773984}
-  aiRespawnPoint: {fileID: 5236207}
-  playerTag: Player
-  aiTag: AI
+  goat1: {fileID: 440613385}
+  goat2: {fileID: 1316124915}
 --- !u!1 &1998951004
 GameObject:
   m_ObjectHideFlags: 0
@@ -3572,7 +3570,7 @@ GameObject:
   - component: {fileID: 1998951005}
   m_Layer: 7
   m_Name: GoatAI#2
-  m_TagString: Player
+  m_TagString: AI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3608,10 +3606,10 @@ MonoBehaviour:
   moveSpeed: 16
   chargeForce: 200
   chargeDuration: 0.7
-  pushInitialVelocity: 30
-  pushAcceleration: 120
-  maxPushVelocity: 200
-  pushDuration: 0.5
+  pushInitialVelocity: 100
+  pushAcceleration: 300
+  maxPushVelocity: 400
+  pushDuration: 1
   jumpAcceleration: 70
   jumpDuration: 0.4
   gravityScale: 1.75
@@ -3630,8 +3628,8 @@ MonoBehaviour:
   dodgeDistance: 5.6
   dodgeDuration: 0.3
   dodgeReturnSpeed: 5
-  opponent: {fileID: 1316124919}
-  goatModel: {fileID: 1762853043}
+  opponent: {fileID: 1998951015}
+  goatModel: {fileID: 1490141256}
   staminaBar: {fileID: 0}
   currentStamina: 100
   maxStamina: 100

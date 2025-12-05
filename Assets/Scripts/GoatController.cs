@@ -85,6 +85,7 @@ public class GoatController : MonoBehaviour
     public bool AttackToTheRight => attackToTheRight; // Getter for attack direction
     public bool IsBeingAttacked => currentAttacker != null; // Getter to check if being attacked
     public GoatController CurrentAttacker => currentAttacker; // Getter for current attacker
+    public Transform Opponent => opponent; // Getter for opponent transform
 
     private bool isJumping = false;
     private float jumpStartTime = -1f;
