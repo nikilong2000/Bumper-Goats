@@ -2616,7 +2616,6 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
-  opponentTransform: {fileID: 1998951015}
   platformTransform: {fileID: 778215492}
   platformRadius: 7.5
   maxEpisodeTime: 60
@@ -3529,7 +3528,7 @@ Transform:
   m_GameObject: {fileID: 1946200311}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12, y: 18.39, z: 9}
+  m_LocalPosition: {x: 12, y: 20.6, z: 9}
   m_LocalScale: {x: 100, y: 1, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3732,7 +3731,6 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
-  opponentTransform: {fileID: 1316124919}
   platformTransform: {fileID: 190951491}
   platformRadius: 7.5
   maxEpisodeTime: 60
