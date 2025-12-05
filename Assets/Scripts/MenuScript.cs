@@ -70,4 +70,9 @@ public class MenuScript : MonoBehaviour
             Debug.LogError("Settings panel not found!"); // Debug: Panel missing
         }
     }
+
+    public void OnReturnToMainMenuScreen()
+    {
+        SceneManager.LoadScene(0);
+    }
 }
