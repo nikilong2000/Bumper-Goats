@@ -14,7 +14,7 @@ public class AiGoatScript : Agent
 
     private Rigidbody rb;
     private Rigidbody opponentRb;
-    
+
     private GoatController goatController;
     private GoatController opponentController;
 
@@ -27,22 +27,22 @@ public class AiGoatScript : Agent
     private bool attackExecuted = false;
     private float attackStartTime = -1f;
     private float attackTimeout = 1.5f; // Time window to check if attack hit
-    
+
     private bool dodgeExecuted = false;
     private float dodgeStartTime = -1f;
     private float dodgeTimeout = 0.5f; // Time window to check if dodge avoided attack
     private bool opponentWasAttackingWhenDodged = false;
-    
+
     private bool jumpExecuted = false;
     private float jumpStartTime = -1f;
     private float jumpTimeout = 0.5f; // Time window to check if jump avoided attack
     private bool opponentWasAttackingWhenJumped = false;
-    
+
     private bool braceExecuted = false;
     private float braceStartTime = -1f;
     private float braceTimeout = 1.0f; // Time window to check if brace avoided attack
     private bool opponentWasAttackingWhenBraced = false;
-    
+
     private bool wasHitThisFrame = false;
     private bool wasHitLastFrame = false;
 
@@ -82,10 +82,12 @@ public class AiGoatScript : Agent
             // Reset opponent goat position and physics only if it's a player
             opponentController.Reset();
             previousOpponentPosition = opponentTransform.position;
-        } else {
+        }
+        else
+        {
             previousOpponentPosition = Vector3.zero;
         }
-        
+
         // Reset action tracking
         attackExecuted = false;
         attackStartTime = -1f;
@@ -110,7 +112,7 @@ public class AiGoatScript : Agent
     /// - Opponent awareness: 11 (direction, velocity, states, distance)
     /// </summary>
     public override void CollectObservations(VectorSensor sensor)
-    {   
+    {
         // --- AI's Self-Awareness (14 observations) ---
 
         // 1. AI's position relative to platform center (3 values: x, y, z)
@@ -185,7 +187,7 @@ public class AiGoatScript : Agent
                 sensor.AddObservation(0f); // Opponent state information
             }
         }
-        
+
     }
 
     private float GetPlatformRadius()
@@ -194,7 +196,7 @@ public class AiGoatScript : Agent
         {
             return ArenaShrinking.Instance.PlatformRadius;
         }
-        
+
         // Fallback if ArenaShrinking not found (shouldn't happen in normal gameplay)
         Debug.LogWarning("ArenaShrinking.Instance not found, using fallback radius");
         return platformRadius; // Use serialized fallback value
@@ -230,8 +232,8 @@ public class AiGoatScript : Agent
         string actionName = "";
         switch (actionType)
         {
-            case 1: 
-                goatController.Attack(); 
+            case 1:
+                goatController.Attack();
                 actionName = "Attack";
                 // Track attack execution
                 if (!attackExecuted || !goatController.IsCharging)
@@ -240,8 +242,8 @@ public class AiGoatScript : Agent
                     attackStartTime = Time.time;
                 }
                 break;
-            case 2: 
-                goatController.Dodge(moveDirection); 
+            case 2:
+                goatController.Dodge(moveDirection);
                 actionName = "Dodge";
                 // Track dodge execution
                 if (!dodgeExecuted || !goatController.IsDodging)
@@ -252,8 +254,8 @@ public class AiGoatScript : Agent
                     opponentWasAttackingWhenDodged = (opponentController != null && opponentController.IsCharging);
                 }
                 break;
-            case 3: 
-                goatController.Jump(); 
+            case 3:
+                goatController.Jump();
                 actionName = "Jump";
                 // Track jump execution
                 if (!jumpExecuted)
@@ -264,8 +266,8 @@ public class AiGoatScript : Agent
                     opponentWasAttackingWhenJumped = (opponentController != null && opponentController.IsCharging);
                 }
                 break;
-            case 4: 
-                goatController.Brace(true); 
+            case 4:
+                goatController.Brace(true);
                 actionName = "Brace";
                 // Track brace execution
                 if (!braceExecuted || !goatController.IsBraced)
@@ -276,14 +278,14 @@ public class AiGoatScript : Agent
                     opponentWasAttackingWhenBraced = (opponentController != null && opponentController.IsCharging);
                 }
                 break;
-            case 0: actionName = "No action"; break;         
+            case 0: actionName = "No action"; break;
             default: actionName = "No action"; break;
         }
         // Debug.Log("stamina: " + goatController.currentStamina + " grounded: " + goatController.IsGrounded);
 
         if (actionType != 4 && goatController.IsBraced) goatController.Brace(false);
         else if (actionType == 4 && !goatController.IsBraced) goatController.Brace(true);
-    
+
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
         AddReward(-0.001f);
@@ -303,12 +305,12 @@ public class AiGoatScript : Agent
         if (opponentTransform != null)
         {
             float distanceToOpponent = Vector3.Distance(transform.position, opponentTransform.position);
-            
+
             // Reward being close to opponent (encourages engagement)
             float proximityReward = 0.02f / (1.0f + distanceToOpponent);
             AddReward(proximityReward);
 
-            
+
             // Reward if opponent has been moved away and towards the edge
             Vector3 opponentMovement = opponentTransform.position - previousOpponentPosition;
             float opponentMoveDistance = opponentMovement.magnitude;
@@ -316,23 +318,23 @@ public class AiGoatScript : Agent
             {
                 // Get the direction the goat is facing (on ground plane)
                 Vector3 facingDirection = new Vector3(transform.forward.x, 0f, transform.forward.z).normalized;
-                
+
                 // Get the direction opponent moved (on ground plane)
                 Vector3 opponentMoveDirection = new Vector3(opponentMovement.x, 0f, opponentMovement.z).normalized;
-                
+
                 // Calculate how well the push aligns with facing direction
                 float alignment = Vector3.Dot(facingDirection, opponentMoveDirection);
-                
+
                 // Reward pushing in the direction we're facing (0 = perpendicular, 1 = perfect alignment)
                 if (alignment > 0.3f) // Only reward if push is somewhat aligned with facing direction
                 {
                     float pushReward = 0.15f * alignment * opponentMoveDistance;
                     AddReward(pushReward);
-                    
+
                     // BONUS: Extra reward if push also moves opponent toward edge
                     float opponentDistFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
                     float previousOpponentDistFromCenter = Vector3.Distance(previousOpponentPosition, platformTransform.position);
-                    
+
                     if (opponentDistFromCenter > previousOpponentDistFromCenter) // Moved away from center
                     {
                         float edgeBonus = (opponentDistFromCenter - previousOpponentDistFromCenter) / GetPlatformRadius();
@@ -340,14 +342,14 @@ public class AiGoatScript : Agent
                     }
                 }
             }
-            
+
             previousOpponentPosition = opponentTransform.position;
         }
 
         // --- Check if AI was hit this frame ---
-        wasHitThisFrame = (goatController.IsBeingAttacked && opponentController != null && 
+        wasHitThisFrame = (goatController.IsBeingAttacked && opponentController != null &&
                           goatController.CurrentAttacker == opponentController);
-        
+
         // Penalize AI for being hit
         if (wasHitThisFrame && !wasHitLastFrame)
         {
@@ -359,11 +361,11 @@ public class AiGoatScript : Agent
         if (attackExecuted && attackStartTime >= 0)
         {
             float timeSinceAttack = Time.time - attackStartTime;
-            
+
             // Check if attack hit (opponent is being attacked by us)
-            bool attackHit = (opponentController != null && opponentController.IsBeingAttacked && 
+            bool attackHit = (opponentController != null && opponentController.IsBeingAttacked &&
                              opponentController.CurrentAttacker == goatController);
-            
+
             if (attackHit)
             {
                 // Reward successful hit
@@ -392,7 +394,7 @@ public class AiGoatScript : Agent
         if (dodgeExecuted && dodgeStartTime >= 0)
         {
             float timeSinceDodge = Time.time - dodgeStartTime;
-            
+
             if (timeSinceDodge <= dodgeTimeout)
             {
                 // Check if dodge successfully avoided attack
@@ -445,7 +447,7 @@ public class AiGoatScript : Agent
         if (jumpExecuted && jumpStartTime >= 0)
         {
             float timeSinceJump = Time.time - jumpStartTime;
-            
+
             if (timeSinceJump <= jumpTimeout)
             {
                 // Check if jump successfully avoided attack
@@ -499,7 +501,7 @@ public class AiGoatScript : Agent
         {
             float timeSinceBrace = Time.time - braceStartTime;
             bool opponentCurrentlyAttacking = (opponentController != null && opponentController.IsCharging);
-            
+
             if (goatController.IsBraced)
             {
                 // Still bracing - check if it's helping avoid damage
