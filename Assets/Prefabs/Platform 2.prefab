@@ -98,6 +98,7 @@ GameObject:
   - component: {fileID: 7231975519125160442}
   - component: {fileID: 5717909317015247535}
   - component: {fileID: 3448688510211653373}
+  - component: {fileID: 5891438800463223119}
   m_Layer: 6
   m_Name: Cylinder.001
   m_TagString: Untagged
@@ -190,11 +191,32 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -7387706064836869012, guid: 8ca2002b79c214a1a8414eab4f3858ab, type: 3}
+--- !u!65 &5891438800463223119
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5041530417979216026}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.8, y: 0.060000066, z: 1.5999997}
+  m_Center: {x: 0, y: 0.008, z: 0}
 --- !u!1001 &4246352115034010196
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -275,6 +297,14 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -1.062
       objectReference: {fileID: 0}
+    - target: {fileID: -6733177361254619370, guid: 378c0bc64b5e64d7681e01f659037293, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -5568371526223589888, guid: 378c0bc64b5e64d7681e01f659037293, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: -5477749408508380018, guid: 378c0bc64b5e64d7681e01f659037293, type: 3}
       propertyPath: m_LocalPosition.y
       value: 0.092
@@ -339,9 +369,13 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: -22.723022
       objectReference: {fileID: 0}
+    - target: {fileID: 117214286460000749, guid: 378c0bc64b5e64d7681e01f659037293, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 378c0bc64b5e64d7681e01f659037293, type: 3}
       propertyPath: m_Name
-      value: Platform 2 1
+      value: Platform 2
       objectReference: {fileID: 0}
     - target: {fileID: 3006864722876412586, guid: 378c0bc64b5e64d7681e01f659037293, type: 3}
       propertyPath: m_LocalPosition.y
