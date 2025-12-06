@@ -15,9 +15,9 @@ public class GoatController : MonoBehaviour
     [Header("Attack Settings")]
     [SerializeField] private float chargeForce = 200f;
     [SerializeField] private float chargeDuration = 0.7f; // change later only for testing
-    [SerializeField] private float pushInitialVelocity = 30f; // Initial velocity boost when first hit (creates bounce effect)
-    [SerializeField] private float pushAcceleration = 200f; // Continuous acceleration during push (for sustained momentum)
-    [SerializeField] private float maxPushVelocity = 200f; // Maximum velocity from push to prevent runaway
+    [SerializeField] private float pushInitialVelocity = 15f; // Initial velocity boost when first hit (creates bounce effect)
+    [SerializeField] private float pushDeceleration = 20f; // Deceleration during push (friction/drag)
+    [SerializeField] private float maxPushVelocity = 30f; // Maximum velocity from push to prevent runaway
     [SerializeField] private float pushDuration = 0.5f; // How long the push momentum lasts (creates extended movement)
 
     [Header("Jump Settings")]
@@ -82,6 +82,7 @@ public class GoatController : MonoBehaviour
     public bool IsCharging => isCharging;
     public bool IsBraced => isBraced;
     public bool IsDodging => isDodging;
+    public bool IsHit => pushStartTime >= 0; // Getter for hit state
     public bool AttackToTheRight => attackToTheRight; // Getter for attack direction
     public bool IsBeingAttacked => currentAttacker != null; // Getter to check if being attacked
     public GoatController CurrentAttacker => currentAttacker; // Getter for current attacker
@@ -107,7 +108,7 @@ public class GoatController : MonoBehaviour
 
     private Vector3 originalPosition;
     private Quaternion originalRotation;
-    
+
     // Reset lock to prevent Update/FixedUpdate from interfering during reset
     private bool isResetting = false;
 
@@ -123,32 +124,32 @@ public class GoatController : MonoBehaviour
         Debug.Log("Resetting GoatController on object with tag: " + gameObject.tag);
         // Lock updates to prevent interference
         isResetting = true;
-        
+
         // Stop all ongoing coroutines
         if (staminaRegenCoroutine != null)
         {
             StopCoroutine(staminaRegenCoroutine);
             staminaRegenCoroutine = null;
         }
-        
+
         if (braceDrainCoroutine != null)
         {
             StopCoroutine(braceDrainCoroutine);
             braceDrainCoroutine = null;
         }
-        
+
         if (chargeAttackCoroutine != null)
         {
             StopCoroutine(chargeAttackCoroutine);
             chargeAttackCoroutine = null;
         }
-        
+
         if (dodgeAnimationCoroutine != null)
         {
             StopCoroutine(dodgeAnimationCoroutine);
             dodgeAnimationCoroutine = null;
         }
-        
+
         // Reset state flags
         isCharging = false;
         isDodging = false;
@@ -158,7 +159,7 @@ public class GoatController : MonoBehaviour
         pushDirection = 0f;
         isCollidingWithPlatform = false;
         isGrounded = false;
-        
+
         // Reset all state flags
         jumpRequested = false;
         jumpUsedThisGround = false;
@@ -166,21 +167,21 @@ public class GoatController : MonoBehaviour
         isJumping = false;
         jumpStartTime = -1f;
         moveDirection = Vector2.zero;
-        
+
         // Reset physics state
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
-        
+
         // Reset position and rotation
         transform.position = originalPosition;
         transform.rotation = originalRotation;
-        
+
         // Reset stamina
         ResetStamina();
-        
+
         // Unlock updates - reset is complete
         isResetting = false;
     }
@@ -191,7 +192,7 @@ public class GoatController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         goatCollider = GetComponent<Collider>();
         originalMass = rb.mass;
-        
+
         // Disable built-in gravity so we can use custom gravity scale
         rb.useGravity = false;
 
@@ -203,7 +204,7 @@ public class GoatController : MonoBehaviour
     {
         // Skip update if reset is in progress
         if (isResetting) return;
-        
+
         float directionToOpponent = opponent.position.x - transform.position.x;
         if (directionToOpponent > 0)
         {
@@ -238,11 +239,11 @@ public class GoatController : MonoBehaviour
     {
         // Skip fixed update if reset is in progress
         if (isResetting) return;
-        
+
         // Ground state is now determined by collision detection (see OnCollisionEnter/Stay/Exit)
         // Reset jump lock when grounded
         if (isGrounded) jumpUsedThisGround = false;
-        
+
         // Apply horizontal movement (X-axis only) - do this first
         // If we're being attacked, we'll add the attack force after
         if (currentAttacker == null)
@@ -250,7 +251,7 @@ public class GoatController : MonoBehaviour
             // Normal movement: set velocity directly
             rb.linearVelocity = new Vector3(moveDirection.x * moveSpeed, rb.linearVelocity.y, 0);
         }
-        
+
         // Apply attack push force if we're being attacked OR if we're still in push momentum phase
         // This allows momentum to continue even after collision ends
         if (currentAttacker != null || pushStartTime >= 0)
@@ -259,7 +260,7 @@ public class GoatController : MonoBehaviour
             ApplyAttackPush();
             Debug.Log($"[GoatController] Linear Velocity After ApplyAttackPush: {rb.linearVelocity}");
         }
-        
+
         // Apply jump acceleration if currently jumping
         if (isJumping)
         {
@@ -277,15 +278,15 @@ public class GoatController : MonoBehaviour
                 jumpStartTime = -1f;
             }
         }
-        
+
         // Apply custom jump/fall acceleration for smoother, more responsive jumping
         // This makes falling faster and allows variable jump height
         ApplyJumpFallAcceleration();
-        
+
         // Check for jump BEFORE clamping Y velocity to ensure jump force isn't interfered with
-        bool willJump = jumpRequested && isGrounded && !isCharging && !jumpUsedThisGround && 
+        bool willJump = jumpRequested && isGrounded && !isCharging && !jumpUsedThisGround &&
                         jumpCooldownTimer <= 0f && currentStamina >= jumpStaminaCost;
-        
+
         // Handle grounding for all cases
         // Clamp Y velocity to 0 when grounded to prevent floating
         // Skip clamping if we're about to jump (jump force will override it anyway)
@@ -401,19 +402,19 @@ public class GoatController : MonoBehaviour
         // Debug.Log($"[GoatController] Jump() executed on {gameObject.name}");
         jumpRequested = true;
     }
-    
+
     private void ApplyJumpFallAcceleration()
     {
         // Apply custom gravity scale for floatier feel
         float customGravity = Physics.gravity.y * gravityScale;
-        
+
         // Always apply base gravity (scaled)
-        rb.linearVelocity += Vector3.up * customGravity * Time.fixedDeltaTime;
-        
+        rb.linearVelocity += customGravity * Time.fixedDeltaTime * Vector3.up;
+
         if (rb.linearVelocity.y < 0)
         {
             // Falling down - apply additional stronger gravity for snappier landing
-            rb.linearVelocity += Vector3.up * customGravity * (fallMultiplier - 1) * Time.fixedDeltaTime;
+            rb.linearVelocity += (fallMultiplier - 1) * customGravity * Time.fixedDeltaTime * Vector3.up;
         }
         else if (rb.linearVelocity.y > 0 && !jumpRequested)
         {
@@ -425,7 +426,7 @@ public class GoatController : MonoBehaviour
     private void TryProcessJump()
     {
         if (!jumpRequested) return;
-        
+
         // Clear request immediately to prevent it from lingering
         jumpRequested = false;
 
@@ -469,7 +470,7 @@ public class GoatController : MonoBehaviour
 
         // Apply a strong forward force to the right (where opponent is)
         // rb.AddForce(transform.right * chargeForce, ForceMode.Impulse);
-        rb.AddForce(transform.right * attackDirection * chargeForce, ForceMode.Impulse);
+        rb.AddForce(attackDirection * chargeForce * transform.right, ForceMode.Impulse);
         // Wait for the charge duration
         yield return new WaitForSeconds(chargeDuration);
 
@@ -577,7 +578,7 @@ public class GoatController : MonoBehaviour
             isCollidingWithPlatform = true;
             isGrounded = true;
         }
-        
+
         // Check if we're colliding with another goat (opponent)
         // More robust: check for GoatController component instead of relying on opponent reference
         GoatController otherGoat = collision.gameObject.GetComponent<GoatController>();
@@ -590,7 +591,7 @@ public class GoatController : MonoBehaviour
             }
         }
     }
-    
+
     private void OnCollisionStay(Collision collision)
     {
         // Check if we're colliding with the platform
@@ -599,7 +600,7 @@ public class GoatController : MonoBehaviour
             isCollidingWithPlatform = true;
             isGrounded = true;
         }
-        
+
         // Check if we're colliding with another goat (opponent)
         // More robust: check for GoatController component instead of relying on opponent reference
         GoatController otherGoat = collision.gameObject.GetComponent<GoatController>();
@@ -612,7 +613,7 @@ public class GoatController : MonoBehaviour
             }
         }
     }
-    
+
     /// <summary>
     /// Called when collision ends
     /// Clear the attacker reference and update ground state
@@ -625,7 +626,7 @@ public class GoatController : MonoBehaviour
             isCollidingWithPlatform = false;
             isGrounded = false;
         }
-        
+
         // Check if we stopped colliding with another goat (opponent)
         GoatController otherGoat = collision.gameObject.GetComponent<GoatController>();
         if (otherGoat != null && otherGoat != this)
@@ -704,31 +705,31 @@ public class GoatController : MonoBehaviour
 
         // Calculate push direction based on attacker's attack direction
         float attackerAttackDirection = currentAttacker.AttackToTheRight ? 1f : -1f;
-        
+
         // Check if this is a new push (first frame of collision)
         if (pushStartTime < 0 || pushDirection != attackerAttackDirection)
         {
             // New push - apply initial velocity boost for bounce effect
             pushStartTime = Time.time;
             pushDirection = attackerAttackDirection;
-            
+
             float effectiveInitialVelocity = pushInitialVelocity;
             if (isBraced)
             {
                 effectiveInitialVelocity *= 0.3f; // Reduce initial boost when bracing
             }
-            
+
             // Apply initial velocity boost
             float currentXVelocity = rb.linearVelocity.x;
             float newXVelocity = currentXVelocity + (pushDirection * effectiveInitialVelocity);
-            
+
             // Clamp to max velocity
             float effectiveMaxVelocity = isBraced ? maxPushVelocity * 0.5f : maxPushVelocity;
             if (Mathf.Abs(newXVelocity) > effectiveMaxVelocity)
             {
                 newXVelocity = Mathf.Sign(newXVelocity) * effectiveMaxVelocity;
             }
-            
+
             rb.linearVelocity = new Vector3(newXVelocity, rb.linearVelocity.y, rb.linearVelocity.z);
             Debug.Log($"Initial push boost: {effectiveInitialVelocity}, new velocity: {newXVelocity:F2}");
         }
@@ -738,55 +739,34 @@ public class GoatController : MonoBehaviour
             ApplyPushMomentum();
         }
     }
-    
+
     /// <summary>
     /// Applies continuous push momentum (called during push and after collision ends)
     /// </summary>
     private void ApplyPushMomentum()
     {
         if (pushStartTime < 0) return;
-        
+
         // Check if push duration has expired
         if (Time.time - pushStartTime >= pushDuration)
         {
             pushStartTime = -1f;
             return;
         }
-        
-        // Calculate effective push acceleration
-        float effectiveAcceleration = pushAcceleration;
+
+        // Calculate effective deceleration
+        float effectiveDeceleration = pushDeceleration;
         if (isBraced)
         {
-            effectiveAcceleration *= 0.3f; // Reduce push acceleration by 70% when bracing
+            effectiveDeceleration *= 3f; // Increase deceleration when bracing (stop faster)
         }
-        
+
         // Get current velocity
         float currentXVelocity = rb.linearVelocity.x;
-        float effectiveMaxVelocity = isBraced ? maxPushVelocity * 0.5f : maxPushVelocity;
-        
-        // Calculate target velocity (in push direction, up to max)
-        float targetVelocity = pushDirection * effectiveMaxVelocity;
-        
-        // Gradually accelerate toward target velocity
-        float velocityChange = effectiveAcceleration * Time.fixedDeltaTime;
-        float newXVelocity;
-        
-        if (Mathf.Sign(currentXVelocity) == Mathf.Sign(targetVelocity))
-        {
-            // Already moving in push direction, accelerate toward max
-            newXVelocity = Mathf.MoveTowards(currentXVelocity, targetVelocity, velocityChange);
-        }
-        else
-        {
-            // Moving opposite direction, accelerate in push direction
-            newXVelocity = currentXVelocity + (pushDirection * velocityChange);
-            // Clamp to max velocity
-            if (Mathf.Abs(newXVelocity) > effectiveMaxVelocity)
-            {
-                newXVelocity = Mathf.Sign(newXVelocity) * effectiveMaxVelocity;
-            }
-        }
-        
+
+        // Decelerate towards 0
+        float newXVelocity = Mathf.MoveTowards(currentXVelocity, 0f, effectiveDeceleration * Time.fixedDeltaTime);
+
         // Apply the new velocity
         rb.linearVelocity = new Vector3(newXVelocity, rb.linearVelocity.y, rb.linearVelocity.z);
     }

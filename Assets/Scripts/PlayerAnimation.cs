@@ -15,6 +15,7 @@ public class PlayerAnimation : MonoBehaviour
     private bool wasGrounded = false;  // Changed to false - don't assume grounded at start
     private bool wasDodging = false;
     private bool wasBracing = false;
+    private bool wasHit = false;
 
     void Start()
     {
@@ -29,7 +30,7 @@ public class PlayerAnimation : MonoBehaviour
         if (animator == null) Debug.LogError("PlayerAnimation: Animator component not found on " + gameObject.name);
         if (goatController == null) Debug.LogWarning("PlayerAnimation: GoatController not found on " + gameObject.name + " or its parents!");
         if (rb == null) Debug.LogWarning("PlayerAnimation: Rigidbody not found on " + gameObject.name + " or its parents!");
-        
+
         // Initialize all animator parameters to false/default state at start
         if (animator != null)
         {
@@ -52,6 +53,7 @@ public class PlayerAnimation : MonoBehaviour
         bool isCharging = goatController.IsCharging;
         bool isGrounded = goatController.IsGrounded;
         bool isDodging = goatController.IsDodging;
+        bool isHit = goatController.IsHit;
 
         // Movement booleans - simple velocity check
         // Don't show running animations while bracing (prevents transition conflicts)
@@ -61,7 +63,7 @@ public class PlayerAnimation : MonoBehaviour
         animator.SetBool("IsRunningForward", isRunningForward);
         animator.SetBool("IsRunningBackward", isRunningBackward);
         animator.SetBool("IsBracing", isBracing);  // Set every frame like the original code
-        
+
         // Jump - when leaving ground
         if (wasGrounded && !isGrounded)
         {
@@ -80,10 +82,17 @@ public class PlayerAnimation : MonoBehaviour
             animator.SetTrigger("DoSpinLeft");
         }
 
+        // Hit - when starting hit
+        if (!wasHit && isHit)
+        {
+            animator.SetTrigger("DoHit");
+        }
+
         // Store states for next frame
         wasCharging = isCharging;
         wasGrounded = isGrounded;
         wasDodging = isDodging;
         wasBracing = isBracing;
+        wasHit = isHit;
     }
 }
