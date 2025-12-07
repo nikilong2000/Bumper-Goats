@@ -25,7 +25,7 @@ public class GoatCombatEffects : MonoBehaviour
         {
             // Check if either goat is attacking (charging)
             // We trigger the effect if this goat is charging OR the other goat is charging
-            if (otherGoat.IsCharging)
+            if (goatController.IsCharging)
             {
                 // // Optional: Only play effect if the impact was hard enough
                 // if (collision.relativeVelocity.magnitude > hitForceThreshold)
