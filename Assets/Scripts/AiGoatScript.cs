@@ -218,7 +218,7 @@ public class AiGoatScript : Agent
         if (elapsedTime >= maxEpisodeTime)
         {
             // End episode due to timeout - give neutral/small negative reward
-            AddReward(-0.1f);
+            AddValidReward(-0.1f);
             EndEpisode();
             return;
         }
@@ -246,7 +246,7 @@ public class AiGoatScript : Agent
                 if (goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
                 {
                     // Penalize attempting attack while another action is active
-                    AddReward(-0.05f);
+                    AddValidReward(-0.05f);
                 }
                 // Check if we have enough stamina before attempting
                 else if (goatController.currentStamina >= 20f) // chargeStaminaCost
@@ -263,7 +263,7 @@ public class AiGoatScript : Agent
                 else
                 {
                     // Penalize attempting attack without enough stamina
-                    AddReward(-0.05f);
+                    AddValidReward(-0.05f);
                     actionAttemptedWithLowStamina = true;
                 }
                 break;
@@ -273,7 +273,7 @@ public class AiGoatScript : Agent
                 if (goatController.IsCharging || goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
                 {
                     // Penalize attempting dodge while another action is active
-                    AddReward(-0.05f);
+                    AddValidReward(-0.05f);
                 }
                 // Check if we have enough stamina and are grounded before attempting
                 else if (goatController.currentStamina >= 10f && goatController.IsGrounded) // dodgeStaminaCost
@@ -292,7 +292,7 @@ public class AiGoatScript : Agent
                 else
                 {
                     // Penalize attempting dodge without enough stamina or when not grounded
-                    AddReward(-0.03f);
+                    AddValidReward(-0.03f);
                     actionAttemptedWithLowStamina = true;
                 }
                 break;
@@ -302,7 +302,7 @@ public class AiGoatScript : Agent
                 if (goatController.IsCharging || goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
                 {
                     // Penalize attempting jump while another action is active or already in air
-                    AddReward(-0.05f);
+                    AddValidReward(-0.05f);
                 }
                 // Check if we have enough stamina before attempting
                 else if (goatController.currentStamina >= 5f) // jumpStaminaCost
@@ -321,7 +321,7 @@ public class AiGoatScript : Agent
                 else
                 {
                     // Penalize attempting jump without enough stamina
-                    AddReward(-0.02f);
+                    AddValidReward(-0.02f);
                     actionAttemptedWithLowStamina = true;
                 }
                 break;
@@ -331,7 +331,7 @@ public class AiGoatScript : Agent
                 if (!goatController.IsBraced && (goatController.IsCharging || goatController.IsDodging || !goatController.IsGrounded))
                 {
                     // Penalize attempting to start brace while another action is active
-                    AddReward(-0.05f);
+                    AddValidReward(-0.05f);
                 }
                 // Check if we have enough stamina before attempting
                 else if (goatController.currentStamina >= 15f) // braceInitialCost
@@ -350,7 +350,7 @@ public class AiGoatScript : Agent
                 else
                 {
                     // Penalize attempting brace without enough stamina
-                    AddReward(-0.03f);
+                    AddValidReward(-0.03f);
                     actionAttemptedWithLowStamina = true;
                 }
                 break;
@@ -373,7 +373,7 @@ public class AiGoatScript : Agent
                     noActionReward += 0.001f;
                 }
                 
-                AddReward(noActionReward);
+                AddValidReward(noActionReward);
                 break;         
             default: actionName = "No action"; break;
         }
@@ -387,19 +387,19 @@ public class AiGoatScript : Agent
     
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
-        AddReward(-0.001f);
+        AddValidReward(-0.001f);
         
         // --- Reward for maintaining good stamina levels (encourages strategic use) ---
         float staminaRatio = goatController.currentStamina / goatController.maxStamina;
         if (staminaRatio > 0.5f)
         {
             // Small reward for maintaining stamina above 50%
-            AddReward(0.001f * (staminaRatio - 0.5f));
+            AddValidReward(0.001f * (staminaRatio - 0.5f));
         }
         else if (staminaRatio < 0.2f)
         {
             // Penalty for letting stamina get too low (encourages managing it better)
-            AddReward(-0.002f * (0.2f - staminaRatio));
+            AddValidReward(-0.002f * (0.2f - staminaRatio));
         }
 
         // --- Penalty for Being Near Edge (Self-Preservation) ---
@@ -410,7 +410,7 @@ public class AiGoatScript : Agent
         // Reward staying away from edge (smooth gradient), but only penalize near edge, don't reward center
         if (normalizedDistanceToEdge < 0.2f)
         {
-            AddReward(-0.01f * (0.2f - normalizedDistanceToEdge));
+            AddValidReward(-0.01f * (0.2f - normalizedDistanceToEdge));
         }
 
         // --- Engagement reward (encourages moving toward opponent) ---
@@ -421,7 +421,7 @@ public class AiGoatScript : Agent
 
             // Reward being close to opponent (encourages engagement)
             float proximityReward = 0.02f / (1.0f + distanceToOpponent);
-            AddReward(proximityReward);
+            AddValidReward(proximityReward);
 
 
             // Reward if opponent has been moved away and towards the edge
@@ -442,7 +442,7 @@ public class AiGoatScript : Agent
                 if (alignment > 0.3f) // Only reward if push is somewhat aligned with facing direction
                 {
                     float pushReward = 0.15f * alignment * opponentMoveDistance;
-                    AddReward(pushReward);
+                    AddValidReward(pushReward);
 
                     // BONUS: Extra reward if push also moves opponent toward edge
                     float opponentDistFromCenter = Vector3.Distance(opponentTransform.position, platformTransform.position);
@@ -451,7 +451,7 @@ public class AiGoatScript : Agent
                     if (opponentDistFromCenter > previousOpponentDistFromCenter) // Moved away from center
                     {
                         float edgeBonus = (opponentDistFromCenter - previousOpponentDistFromCenter) / GetPlatformRadius();
-                        AddReward(0.2f * edgeBonus * alignment); // Bonus scaled by alignment
+                        AddValidReward(0.2f * edgeBonus * alignment); // Bonus scaled by alignment
                     }
                 }
             }
@@ -466,7 +466,7 @@ public class AiGoatScript : Agent
         // Penalize AI for being hit
         if (wasHitThisFrame && !wasHitLastFrame)
         {
-            AddReward(-0.5f); // Penalty for getting hit
+            AddValidReward(-0.5f); // Penalty for getting hit
         }
         wasHitLastFrame = wasHitThisFrame;
 
@@ -482,14 +482,14 @@ public class AiGoatScript : Agent
             if (attackHit)
             {
                 // Reward successful hit - INCREASED to encourage offensive play
-                AddReward(0.6f);
+                AddValidReward(0.6f);
                 attackExecuted = false; // Reset after successful hit
                 attackStartTime = -1f;
             }
             else if (timeSinceAttack > attackTimeout)
             {
                 // Attack timed out without hitting - STRONGER penalty for failed attacks
-                AddReward(-0.1f);
+                AddValidReward(-0.1f);
                 attackExecuted = false;
                 attackStartTime = -1f;
             }
@@ -497,7 +497,7 @@ public class AiGoatScript : Agent
             else if (!goatController.IsCharging)
             {
                 // Attack ended without hitting - STRONGER penalty for failed attacks
-                AddReward(-0.1f);
+                AddValidReward(-0.1f);
                 attackExecuted = false;
                 attackStartTime = -1f;
             }
@@ -514,7 +514,7 @@ public class AiGoatScript : Agent
                 if (opponentWasAttackingWhenDodged && !wasHitThisFrame)
                 {
                     // Successfully dodged an attack - REDUCED reward (less emphasis on defense)
-                    AddReward(0.1f);
+                    AddValidReward(0.1f);
                     dodgeExecuted = false;
                     dodgeStartTime = -1f;
                     opponentWasAttackingWhenDodged = false;
@@ -522,7 +522,7 @@ public class AiGoatScript : Agent
                 else if (opponentWasAttackingWhenDodged && wasHitThisFrame)
                 {
                     // Tried to dodge but still got hit - stronger penalty
-                    AddReward(-0.1f);
+                    AddValidReward(-0.1f);
                     dodgeExecuted = false;
                     dodgeStartTime = -1f;
                     opponentWasAttackingWhenDodged = false;
@@ -537,18 +537,18 @@ public class AiGoatScript : Agent
                     if (!wasHitThisFrame)
                     {
                         // Successfully avoided - REDUCED reward (less emphasis on defense)
-                        AddReward(0.08f);
+                        AddValidReward(0.08f);
                     }
                     else
                     {
                         // Still got hit - stronger penalty
-                        AddReward(-0.1f);
+                        AddValidReward(-0.1f);
                     }
                 }
                 else
                 {
                     // Dodged when opponent wasn't attacking - STRONGER penalty for unnecessary action
-                    AddReward(-0.05f);
+                    AddValidReward(-0.05f);
                 }
                 dodgeExecuted = false;
                 dodgeStartTime = -1f;
@@ -567,7 +567,7 @@ public class AiGoatScript : Agent
                 if (opponentWasAttackingWhenJumped && !wasHitThisFrame)
                 {
                     // Successfully jumped to avoid attack - REDUCED reward (less emphasis on defense)
-                    AddReward(0.1f);
+                    AddValidReward(0.1f);
                     jumpExecuted = false;
                     jumpStartTime = -1f;
                     opponentWasAttackingWhenJumped = false;
@@ -575,7 +575,7 @@ public class AiGoatScript : Agent
                 else if (opponentWasAttackingWhenJumped && wasHitThisFrame)
                 {
                     // Tried to jump but still got hit - stronger penalty
-                    AddReward(-0.1f);
+                    AddValidReward(-0.1f);
                     jumpExecuted = false;
                     jumpStartTime = -1f;
                     opponentWasAttackingWhenJumped = false;
@@ -590,18 +590,18 @@ public class AiGoatScript : Agent
                     if (!wasHitThisFrame)
                     {
                         // Successfully avoided - REDUCED reward (less emphasis on defense)
-                        AddReward(0.08f);
+                        AddValidReward(0.08f);
                     }
                     else
                     {
                         // Still got hit - stronger penalty
-                        AddReward(-0.1f);
+                        AddValidReward(-0.1f);
                     }
                 }
                 else
                 {
                     // Jumped when opponent wasn't attacking - STRONGER penalty for unnecessary action
-                    AddReward(-0.05f);
+                    AddValidReward(-0.05f);
                 }
                 jumpExecuted = false;
                 jumpStartTime = -1f;
@@ -626,13 +626,13 @@ public class AiGoatScript : Agent
                     if (braceDistanceFromCenter < GetPlatformRadius() * 0.8f)
                     {
                         // Brace helped reduce push - REDUCED reward (less emphasis on defense)
-                        AddReward(0.05f);
+                        AddValidReward(0.05f);
                     }
                 }
                 else if (opponentWasAttackingWhenBraced && !wasHitThisFrame)
                 {
                     // Bracing and avoiding attack - REDUCED reward (less emphasis on defense)
-                    AddReward(0.08f);
+                    AddValidReward(0.08f);
                 }
             }
             else
@@ -643,17 +643,17 @@ public class AiGoatScript : Agent
                     if (opponentWasAttackingWhenBraced && !wasHitThisFrame)
                     {
                         // Successfully braced to avoid attack - REDUCED reward (less emphasis on defense)
-                        AddReward(0.1f);
+                        AddValidReward(0.1f);
                     }
                     else if (opponentWasAttackingWhenBraced && wasHitThisFrame)
                     {
                         // Braced but still got hit - stronger penalty
-                        AddReward(-0.1f);
+                        AddValidReward(-0.1f);
                     }
                     else if (!opponentWasAttackingWhenBraced)
                     {
                         // Braced when opponent wasn't attacking - STRONGER penalty for unnecessary action
-                        AddReward(-0.05f);
+                        AddValidReward(-0.05f);
                     }
                 }
                 braceExecuted = false;
@@ -683,6 +683,14 @@ public class AiGoatScript : Agent
         else if (Input.GetKey(KeyCode.W)) discreteActions[0] = 3; // Jump (W)
         else if (Input.GetKey(KeyCode.S)) discreteActions[0] = 4; // Brace (S)
         else discreteActions[0] = 0; // No action
+    }
+
+    private void AddValidReward(float reward)
+    {
+        if (!float.IsInfinity(reward) && !float.IsNaN(reward))
+        {
+            AddReward(reward);
+        }
     }
 
     /// <summary>

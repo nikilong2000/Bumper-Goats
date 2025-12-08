@@ -1061,7 +1061,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!23 &440613387
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2587,7 +2587,7 @@ Transform:
   m_GameObject: {fileID: 1316124915}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 15.89, y: 26.5, z: 9}
+  m_LocalPosition: {x: 18.56, y: 26.5, z: 9}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2760,7 +2760,7 @@ MonoBehaviour:
   dodgeDistance: 5.6
   dodgeDuration: 0.3
   dodgeReturnSpeed: 5
-  opponent: {fileID: 440613389}
+  opponent: {fileID: 1998951015}
   goatModel: {fileID: 1490141256}
   staminaBar: {fileID: 0}
   currentStamina: 100
@@ -3800,7 +3800,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d14ad2e4bb6dc43119499a9e31a5e8cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  goat1: {fileID: 440613385}
+  goat1: {fileID: 1998951004}
   goat2: {fileID: 1316124915}
 --- !u!1 &1998951004
 GameObject:
@@ -3827,7 +3827,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1998951005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3881,8 +3881,8 @@ MonoBehaviour:
   dodgeDistance: 5.6
   dodgeDuration: 0.3
   dodgeReturnSpeed: 5
-  opponent: {fileID: 1998951015}
-  goatModel: {fileID: 1490141256}
+  opponent: {fileID: 1316124919}
+  goatModel: {fileID: 1762853043}
   staminaBar: {fileID: 0}
   currentStamina: 100
   maxStamina: 100
