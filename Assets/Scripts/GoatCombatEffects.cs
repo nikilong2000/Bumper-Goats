@@ -11,27 +11,45 @@ public class GoatCombatEffects : MonoBehaviour
     [SerializeField] private float hitForceThreshold = 1.0f; // Minimum speed to trigger an effect
 
     private GoatController goatController;
+    private bool hasPlayedEffectForCurrentCharge = false;
 
     private void Awake()
     {
         goatController = GetComponent<GoatController>();
     }
 
+    private void Update()
+    {
+        // Reset the flag when we are no longer charging
+        if (!goatController.IsCharging)
+        {
+            hasPlayedEffectForCurrentCharge = false;
+        }
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
-        // 1. Check if we hit the other goat
+        TrySpawnEffect(collision);
+    }
 
+    private void OnCollisionStay(Collision collision)
+    {
+        TrySpawnEffect(collision);
+    }
+
+    private void TrySpawnEffect(Collision collision)
+    {
+        // If we already played the effect for this charge, do nothing
+        if (hasPlayedEffectForCurrentCharge) return;
+
+        // 1. Check if we hit the other goat
         if (collision.gameObject.TryGetComponent<GoatController>(out var otherGoat))
         {
-            // Check if either goat is attacking (charging)
-            // We trigger the effect if this goat is charging OR the other goat is charging
+            // Check if we are attacking (charging)
             if (goatController.IsCharging)
             {
-                // // Optional: Only play effect if the impact was hard enough
-                // if (collision.relativeVelocity.magnitude > hitForceThreshold)
-                // {
                 SpawnEffects(collision);
-                // }
+                hasPlayedEffectForCurrentCharge = true;
             }
         }
     }
