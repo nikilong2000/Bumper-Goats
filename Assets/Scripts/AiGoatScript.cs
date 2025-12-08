@@ -41,7 +41,7 @@ public class AiGoatScript : Agent
 
     private bool wasHitThisFrame = false;
     private bool wasHitLastFrame = false;
-    
+
     // Stamina tracking for penalty system
     private float previousStamina = 100f;
     private bool actionAttemptedWithLowStamina = false;
@@ -237,10 +237,10 @@ public class AiGoatScript : Agent
         string actionName = "";
         float staminaBeforeAction = goatController.currentStamina;
         bool actionWasExecuted = false;
-        
+
         switch (actionType)
         {
-            case 1: 
+            case 1:
                 actionName = "Attack";
                 // Check if another action is already active
                 if (goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
@@ -267,7 +267,7 @@ public class AiGoatScript : Agent
                     actionAttemptedWithLowStamina = true;
                 }
                 break;
-            case 2: 
+            case 2:
                 actionName = "Dodge";
                 // Check if another action is already active
                 if (goatController.IsCharging || goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
@@ -296,7 +296,7 @@ public class AiGoatScript : Agent
                     actionAttemptedWithLowStamina = true;
                 }
                 break;
-            case 3: 
+            case 3:
                 actionName = "Jump";
                 // Check if another action is already active
                 if (goatController.IsCharging || goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
@@ -325,7 +325,7 @@ public class AiGoatScript : Agent
                     actionAttemptedWithLowStamina = true;
                 }
                 break;
-            case 4: 
+            case 4:
                 actionName = "Brace";
                 // Check if another action is already active (except if already bracing, which is allowed to toggle)
                 if (!goatController.IsBraced && (goatController.IsCharging || goatController.IsDodging || !goatController.IsGrounded))
@@ -354,41 +354,41 @@ public class AiGoatScript : Agent
                     actionAttemptedWithLowStamina = true;
                 }
                 break;
-            case 0: 
+            case 0:
                 actionName = "No action";
                 // Reward choosing no action - encourages strategic patience
                 // Higher reward when it's smart to wait (low stamina, action already active)
                 float noActionReward = 0.01f; // Base reward for patience
-                
+
                 // Bonus reward if waiting is particularly smart
                 if (goatController.IsCharging || goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
                 {
                     // Smart to wait while another action is active
                     noActionReward += 0.002f;
                 }
-                
+
                 if (goatController.currentStamina < 30f)
                 {
                     // Smart to wait when stamina is low
                     noActionReward += 0.001f;
                 }
-                
+
                 AddValidReward(noActionReward);
-                break;         
+                break;
             default: actionName = "No action"; break;
         }
         // Debug.Log("stamina: " + goatController.currentStamina + " grounded: " + goatController.IsGrounded);
 
         if (actionType != 4 && goatController.IsBraced) goatController.Brace(false);
         else if (actionType == 4 && !goatController.IsBraced && goatController.currentStamina >= 15f) goatController.Brace(true);
-        
+
         // Update stamina tracking
         previousStamina = staminaBeforeAction;
-    
+
         // --- Small Penalty for Existing (Time Cost) ---
         // This encourages the AI to finish episodes quickly
         AddValidReward(-0.001f);
-        
+
         // --- Reward for maintaining good stamina levels (encourages strategic use) ---
         float staminaRatio = goatController.currentStamina / goatController.maxStamina;
         if (staminaRatio > 0.5f)
@@ -479,7 +479,7 @@ public class AiGoatScript : Agent
                 new Vector3(opponentTransform.position.x, 0f, opponentTransform.position.z),
                 new Vector3(transform.position.x, 0f, transform.position.z)
             );
-            
+
             // Check if opponent is on top (higher Y position and close horizontally)
             if (opponentY > goatY + 0.5f && horizontalDistance < 1.5f)
             {
@@ -692,13 +692,16 @@ public class AiGoatScript : Agent
         ActionSegment<int> discreteActions = actionsOut.DiscreteActions;
 
         // Use A/D or Left/Right arrow keys to control movement (same as player)
-        continuousActions[0] = Input.GetAxisRaw("Horizontal");
+        float moveInput = 0f;
+        if (Input.GetKey(KeyCode.RightArrow)) moveInput = 1f;
+        else if (Input.GetKey(KeyCode.LeftArrow)) moveInput = -1f;
+        continuousActions[0] = moveInput;
 
         // Use same keys as player controls for combat actions
-        if (Input.GetKey(KeyCode.Space)) discreteActions[0] = 1; // Attack (Space)
-        else if (Input.GetKey(KeyCode.Q)) discreteActions[0] = 2; // Dodge (Q)
-        else if (Input.GetKey(KeyCode.W)) discreteActions[0] = 3; // Jump (W)
-        else if (Input.GetKey(KeyCode.S)) discreteActions[0] = 4; // Brace (S)
+        if (Input.GetKey(KeyCode.Alpha0)) discreteActions[0] = 1; // Attack (Space)
+        else if (Input.GetKey(KeyCode.Alpha9)) discreteActions[0] = 2; // Dodge (Q)
+        else if (Input.GetKey(KeyCode.UpArrow)) discreteActions[0] = 3; // Jump (W)
+        else if (Input.GetKey(KeyCode.DownArrow)) discreteActions[0] = 4; // Brace (S)
         else discreteActions[0] = 0; // No action
     }
 
