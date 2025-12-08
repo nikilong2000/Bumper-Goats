@@ -256,9 +256,9 @@ public class GoatController : MonoBehaviour
         // This allows momentum to continue even after collision ends
         if (currentAttacker != null || pushStartTime >= 0)
         {
-            Debug.Log($"[GoatController] Linear Velocity Before ApplyAttackPush: {rb.linearVelocity}");
+            // Debug.Log($"[GoatController] Linear Velocity Before ApplyAttackPush: {rb.linearVelocity}");
             ApplyAttackPush();
-            Debug.Log($"[GoatController] Linear Velocity After ApplyAttackPush: {rb.linearVelocity}");
+            // Debug.Log($"[GoatController] Linear Velocity After ApplyAttackPush: {rb.linearVelocity}");
         }
 
         // Apply jump acceleration if currently jumping
@@ -297,8 +297,8 @@ public class GoatController : MonoBehaviour
         }
 
         TryProcessJump();
-        if (currentAttacker != null)
-            Debug.Log($"[GoatController] Linear Velocity After FixedUpdate: {rb.linearVelocity}");
+        // if (currentAttacker != null)
+        //     Debug.Log($"[GoatController] Linear Velocity After FixedUpdate: {rb.linearVelocity}");
 
         // Debug.Log($"[GoatController] Linear Velocity After FixedUpdate: {rb.linearVelocity}, isGrounded: {isGrounded}");
 

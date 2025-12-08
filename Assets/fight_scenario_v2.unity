@@ -673,7 +673,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -281, y: 212.23944}
+  m_AnchoredPosition: {x: -421, y: 300}
   m_SizeDelta: {x: 250, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &266749809
@@ -1878,7 +1878,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 13}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -405.30353, y: 211.6}
+  m_AnchoredPosition: {x: -37, y: 299.36057}
   m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &811846334
@@ -3034,7 +3034,7 @@ MonoBehaviour:
   dodgeDistance: 5.6
   dodgeDuration: 0.3
   dodgeReturnSpeed: 5
-  opponent: {fileID: 1998951015}
+  opponent: {fileID: 440613389}
   goatModel: {fileID: 1490141256}
   staminaBar: {fileID: 377475654}
   currentStamina: 100
@@ -3357,7 +3357,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -281, y: 212.23944}
+  m_AnchoredPosition: {x: -160, y: 300}
   m_SizeDelta: {x: 250, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1813248620
@@ -3540,7 +3540,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 13}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -405.30353, y: 211.6}
+  m_AnchoredPosition: {x: -545.3035, y: 299.36057}
   m_SizeDelta: {x: 80, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1816338743
@@ -4152,7 +4152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d14ad2e4bb6dc43119499a9e31a5e8cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  goat1: {fileID: 1998951004}
+  goat1: {fileID: 440613385}
   goat2: {fileID: 1316124915}
 --- !u!1 &1998951004
 GameObject:

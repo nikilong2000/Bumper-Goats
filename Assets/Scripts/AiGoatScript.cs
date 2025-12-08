@@ -470,6 +470,23 @@ public class AiGoatScript : Agent
         }
         wasHitLastFrame = wasHitThisFrame;
 
+        // --- Penalty for opponent being on top of the goat ---
+        if (opponentTransform != null)
+        {
+            float opponentY = opponentTransform.position.y;
+            float goatY = transform.position.y;
+            float horizontalDistance = Vector3.Distance(
+                new Vector3(opponentTransform.position.x, 0f, opponentTransform.position.z),
+                new Vector3(transform.position.x, 0f, transform.position.z)
+            );
+            
+            // Check if opponent is on top (higher Y position and close horizontally)
+            if (opponentY > goatY + 0.5f && horizontalDistance < 1.5f)
+            {
+                AddValidReward(-0.02f); // Small continuous penalty while opponent is on top
+            }
+        }
+
         // --- Reward/Penalize Attack Action ---
         if (attackExecuted && attackStartTime >= 0)
         {
