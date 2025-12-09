@@ -27,8 +27,6 @@ public class GoatController : MonoBehaviour
     [SerializeField] private float fallMultiplier = 10f; // How much faster to fall (higher = less floaty)
     [SerializeField] private float lowJumpMultiplier = 2f; // Gravity multiplier when not holding jump
     [SerializeField] private Transform platform;
-    [SerializeField] private float groundCheckRadius = 0.25f; // Tunable tolerance for ground detection
-    [SerializeField] private float groundCheckSinkTolerance = 0.5f; // How far below surface the goat can be and still be considered grounded
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask goatLayer; // since the goat should be grounded when hitting the other goat
 
@@ -56,6 +54,10 @@ public class GoatController : MonoBehaviour
     private float braceInitialCost = 15f; // Upfront cost to activate brace
     private float braceDrainRate = 5f; // Stamina per second while bracing
 
+    [Header("Lives Settings")]
+    [SerializeField] private int maxLives = 3;
+    private int currentLives;
+
     private Coroutine staminaRegenCoroutine;
     private Coroutine braceDrainCoroutine;
     private Coroutine chargeAttackCoroutine;
@@ -75,7 +77,6 @@ public class GoatController : MonoBehaviour
     private GoatController currentAttacker = null; // Track who is currently attacking us
     private float pushStartTime = -1f; // When the current push started (-1 means no active push)
     private float pushDirection = 0f; // Direction of the current push (1 or -1)
-    private bool isCollidingWithPlatform = false; // Track if we're colliding with the platform
 
     // Getters for AI observations
     public bool IsGrounded => isGrounded;
@@ -87,6 +88,8 @@ public class GoatController : MonoBehaviour
     public bool IsBeingAttacked => currentAttacker != null; // Getter to check if being attacked
     public GoatController CurrentAttacker => currentAttacker; // Getter for current attacker
     public Transform Opponent => opponent; // Getter for opponent transform
+    public int CurrentLives => currentLives; // Getter for current lives
+    public int MaxLives => maxLives; // Getter for max lives
 
     private bool isJumping = false;
     private float jumpStartTime = -1f;
@@ -157,7 +160,6 @@ public class GoatController : MonoBehaviour
         currentAttacker = null;
         pushStartTime = -1f;
         pushDirection = 0f;
-        isCollidingWithPlatform = false;
         isGrounded = false;
 
         // Reset all state flags
@@ -198,6 +200,9 @@ public class GoatController : MonoBehaviour
 
         facingRight = Quaternion.Euler(0, 90, 0);
         facingLeft = Quaternion.Euler(0, -90, 0);
+
+        // Initialize lives
+        InitializeLives();
     }
 
     private void Update()
@@ -567,6 +572,38 @@ public class GoatController : MonoBehaviour
     }
 
     /// <summary>
+    /// Initialize lives to max value
+    /// </summary>
+    public void InitializeLives()
+    {
+        currentLives = maxLives;
+        // Debug.Log($"[GoatController] Lives initialized to {currentLives} for {gameObject.name}");
+    }
+
+    /// <summary>
+    /// Lose a life and return true if the goat is out of lives
+    /// </summary>
+    public bool LoseLife()
+    {
+        if (currentLives > 0)
+        {
+            currentLives--;
+            Debug.Log($"[GoatController] {gameObject.name} lost a life. Remaining: {currentLives}/{maxLives}");
+            return currentLives <= 0;
+        }
+        return true; // Already out of lives
+    }
+
+    /// <summary>
+    /// Reset lives to max value
+    /// </summary>
+    public void ResetLives()
+    {
+        currentLives = maxLives;
+        // Debug.Log($"[GoatController] Lives reset to {currentLives} for {gameObject.name}");
+    }
+
+    /// <summary>
     /// Called every frame while this goat is colliding with another object
     /// If we're attacking and colliding with opponent, notify them they're being attacked
     /// </summary>
@@ -575,7 +612,6 @@ public class GoatController : MonoBehaviour
         // Check if we're colliding with the platform
         if (platform != null && collision.gameObject.transform == platform)
         {
-            isCollidingWithPlatform = true;
             isGrounded = true;
         }
 
@@ -597,7 +633,6 @@ public class GoatController : MonoBehaviour
         // Check if we're colliding with the platform
         if (platform != null && collision.gameObject.transform == platform)
         {
-            isCollidingWithPlatform = true;
             isGrounded = true;
         }
 
@@ -623,7 +658,6 @@ public class GoatController : MonoBehaviour
         // Check if we stopped colliding with the platform
         if (platform != null && collision.gameObject.transform == platform)
         {
-            isCollidingWithPlatform = false;
             isGrounded = false;
         }
 
@@ -731,7 +765,7 @@ public class GoatController : MonoBehaviour
             }
 
             rb.linearVelocity = new Vector3(newXVelocity, rb.linearVelocity.y, rb.linearVelocity.z);
-            Debug.Log($"Initial push boost: {effectiveInitialVelocity}, new velocity: {newXVelocity:F2}");
+            // Debug.Log($"Initial push boost: {effectiveInitialVelocity}, new velocity: {newXVelocity:F2}");
         }
         else
         {

@@ -44,7 +44,6 @@ public class AiGoatScript : Agent
 
     // Stamina tracking for penalty system
     private float previousStamina = 100f;
-    private bool actionAttemptedWithLowStamina = false;
 
     [Header("Episode Settings")]
     [SerializeField] private float maxEpisodeTime = 60f; // Maximum episode time in seconds
@@ -106,7 +105,6 @@ public class AiGoatScript : Agent
         wasHitThisFrame = false;
         wasHitLastFrame = false;
         previousStamina = goatController.maxStamina;
-        actionAttemptedWithLowStamina = false;
     }
 
     /// <summary>
@@ -234,14 +232,11 @@ public class AiGoatScript : Agent
         // --- Discrete Actions: Combat Actions (4 actions) ---
         // 0: No action, 1: Attack, 2: Dodge, 3: Jump, 4: Brace
         int actionType = actions.DiscreteActions[0];
-        string actionName = "";
         float staminaBeforeAction = goatController.currentStamina;
-        bool actionWasExecuted = false;
 
         switch (actionType)
         {
             case 1:
-                actionName = "Attack";
                 // Check if another action is already active
                 if (goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
                 {
@@ -257,18 +252,15 @@ public class AiGoatScript : Agent
                     {
                         attackExecuted = true;
                         attackStartTime = Time.time;
-                        actionWasExecuted = true;
                     }
                 }
                 else
                 {
                     // Penalize attempting attack without enough stamina
                     AddValidReward(-0.05f);
-                    actionAttemptedWithLowStamina = true;
                 }
                 break;
             case 2:
-                actionName = "Dodge";
                 // Check if another action is already active
                 if (goatController.IsCharging || goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
                 {
@@ -286,18 +278,15 @@ public class AiGoatScript : Agent
                         dodgeStartTime = Time.time;
                         // Record if opponent was attacking when we dodged
                         opponentWasAttackingWhenDodged = (opponentController != null && opponentController.IsCharging);
-                        actionWasExecuted = true;
                     }
                 }
                 else
                 {
                     // Penalize attempting dodge without enough stamina or when not grounded
                     AddValidReward(-0.03f);
-                    actionAttemptedWithLowStamina = true;
                 }
                 break;
             case 3:
-                actionName = "Jump";
                 // Check if another action is already active
                 if (goatController.IsCharging || goatController.IsDodging || goatController.IsBraced || !goatController.IsGrounded)
                 {
@@ -315,18 +304,15 @@ public class AiGoatScript : Agent
                         jumpStartTime = Time.time;
                         // Record if opponent was attacking when we jumped
                         opponentWasAttackingWhenJumped = (opponentController != null && opponentController.IsCharging);
-                        actionWasExecuted = true;
                     }
                 }
                 else
                 {
                     // Penalize attempting jump without enough stamina
                     AddValidReward(-0.02f);
-                    actionAttemptedWithLowStamina = true;
                 }
                 break;
             case 4:
-                actionName = "Brace";
                 // Check if another action is already active (except if already bracing, which is allowed to toggle)
                 if (!goatController.IsBraced && (goatController.IsCharging || goatController.IsDodging || !goatController.IsGrounded))
                 {
@@ -344,18 +330,15 @@ public class AiGoatScript : Agent
                         braceStartTime = Time.time;
                         // Record if opponent was attacking when we braced
                         opponentWasAttackingWhenBraced = (opponentController != null && opponentController.IsCharging);
-                        actionWasExecuted = true;
                     }
                 }
                 else
                 {
                     // Penalize attempting brace without enough stamina
                     AddValidReward(-0.03f);
-                    actionAttemptedWithLowStamina = true;
                 }
                 break;
             case 0:
-                actionName = "No action";
                 // Reward choosing no action - encourages strategic patience
                 // Higher reward when it's smart to wait (low stamina, action already active)
                 float noActionReward = 0.01f; // Base reward for patience
@@ -375,7 +358,8 @@ public class AiGoatScript : Agent
 
                 AddValidReward(noActionReward);
                 break;
-            default: actionName = "No action"; break;
+            default:
+                break;
         }
         // Debug.Log("stamina: " + goatController.currentStamina + " grounded: " + goatController.IsGrounded);
 

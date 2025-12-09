@@ -109,3 +109,6 @@ AllTateviksAssets.meta
 Assets/ML-Agents/Timers/*.json
 Assets/Textures/*/*.meta
 Assets/Textures/*.meta
+
+.vscode/settings.json
+Assets/ML-Agents/Timers/fight_scenario_v2_timers.json
