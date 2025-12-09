@@ -7,9 +7,6 @@ public class GoatCombatEffects : MonoBehaviour
     [SerializeField] private GameObject hitEffectPrefab;  // Assign your Spark/Flash prefab here
     [SerializeField] private GameObject dustEffectPrefab; // Assign your Dust prefab here
 
-    [Header("Settings")]
-    [SerializeField] private float hitForceThreshold = 1.0f; // Minimum speed to trigger an effect
-
     private GoatController goatController;
     private bool hasPlayedEffectForCurrentCharge = false;
 
