@@ -75,4 +75,26 @@ public class MenuScript : MonoBehaviour
     {
         SceneManager.LoadScene(0);
     }
+
+    public void OnTryAgainButtonPressed()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
+        // Disable the game over panel
+        GameObject[] allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
+        GameObject gameOverPanel = null;
+
+        foreach (GameObject obj in allObjects)
+        {
+            if (obj.CompareTag("GameOverUI"))
+            {
+                gameOverPanel = obj;
+                break;
+            }
+        }
+
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(false);
+
+    }
 }
