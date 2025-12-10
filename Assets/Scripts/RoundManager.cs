@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using TMPro;
 
 public class RoundManager : MonoBehaviour
 {
@@ -14,6 +15,11 @@ public class RoundManager : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private GameObject roundEndPanel; // Panel that shows round information
     [SerializeField] private GameObject matchEndPanel; // Panel that shows match end information
+    [SerializeField] private GameObject[] playerHearts; // Array of heart GameObjects for player
+    [SerializeField] private GameObject[] playerHeartsGrey; // Array of grey/used heart GameObjects for player (overlay)
+    [SerializeField] private GameObject[] opponentHearts; // Array of heart GameObjects for opponent
+    [SerializeField] private GameObject[] opponentHeartsGrey; // Array of grey/used heart GameObjects for opponent (overlay)
+    [SerializeField] private TextMeshProUGUI roundText; // Text to display current round
 
     private int currentRound = 1;
     private bool isRoundEnding = false;
@@ -52,6 +58,9 @@ public class RoundManager : MonoBehaviour
         {
             goat2Controller.InitializeLives();
         }
+
+        UpdateHeartsUI();
+        UpdateRoundUI();
     }
 
     /// <summary>
@@ -67,6 +76,9 @@ public class RoundManager : MonoBehaviour
 
         // Lose a life
         bool isOutOfLives = fallenController.LoseLife();
+
+        // Update UI
+        UpdateHeartsUI();
 
         // Determine the other goat
         GameObject otherGoat = (fallenGoat == goat1) ? goat2 : goat1;
@@ -151,6 +163,7 @@ public class RoundManager : MonoBehaviour
 
         // Move to next round
         currentRound++;
+        UpdateRoundUI();
 
         // Note: We already check max rounds in EndRound() before starting this coroutine
         // So we don't need to check again here - if we reach this point, we're continuing to next round
@@ -219,6 +232,7 @@ public class RoundManager : MonoBehaviour
 
         // Reset round counter
         currentRound = 1;
+        UpdateRoundUI();
 
         // Reset arena size if needed
         if (ArenaShrinking.Instance != null)
@@ -250,6 +264,8 @@ public class RoundManager : MonoBehaviour
             goat2Controller.ResetLives();
         }
 
+        UpdateHeartsUI();
+
         isRoundEnding = false;
     }
 
@@ -280,6 +296,7 @@ public class RoundManager : MonoBehaviour
 
         // Reset round counter
         currentRound = 1;
+        UpdateRoundUI();
 
         // Reset lives for both goats
         if (goat1Controller != null)
@@ -290,6 +307,7 @@ public class RoundManager : MonoBehaviour
         {
             goat2Controller.ResetLives();
         }
+        UpdateHeartsUI();
 
         // Reset arena size if needed
         if (ArenaShrinking.Instance != null)
@@ -337,6 +355,51 @@ public class RoundManager : MonoBehaviour
                 Debug.Log("Setting active elements for player lose");
                 // TODO: setting active elements for player lose
             }
+        }
+    }
+
+    private void UpdateHeartsUI()
+    {
+        UpdateHeartList(goat1Controller, playerHearts, playerHeartsGrey);
+        UpdateHeartList(goat2Controller, opponentHearts, opponentHeartsGrey);
+    }
+
+    private void UpdateHeartList(GoatController controller, GameObject[] hearts, GameObject[] greyHearts)
+    {
+        if (controller != null && hearts != null)
+        {
+            bool usingOverlay = (greyHearts != null && greyHearts.Length > 0);
+
+            for (int i = 0; i < hearts.Length; i++)
+            {
+                bool hasLife = i < controller.CurrentLives;
+
+                if (hearts[i] != null)
+                {
+                    if (usingOverlay && i < greyHearts.Length && greyHearts[i] != null)
+                    {
+                        // Overlay Mode:
+                        // Base heart stays active (so it doesn't disappear)
+                        hearts[i].SetActive(true);
+
+                        // Overlay is active when life is lost (to make it look used)
+                        greyHearts[i].SetActive(!hasLife);
+                    }
+                    else
+                    {
+                        // Standard Mode (Disappear):
+                        hearts[i].SetActive(hasLife);
+                    }
+                }
+            }
+        }
+    }
+
+    private void UpdateRoundUI()
+    {
+        if (roundText != null)
+        {
+            roundText.text = "Round " + currentRound;
         }
     }
 }
