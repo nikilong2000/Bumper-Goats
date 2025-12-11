@@ -50,54 +50,46 @@ public class FallZoneDetector : MonoBehaviour
         bool otherGoatIsAI = otherGoatAI != null;
 
         // If RoundManager exists, use it to handle the round/match logic
-        if (roundManager != null && !roundManager.IsRoundEnding())
+        if (roundManager != null)
         {
-            Debug.Log($"{fallenGoat.name} fell off");
-            roundManager.OnGoatFell(fallenGoat);
+            if (!roundManager.IsRoundEnding())
+            {
+                Debug.Log($"{fallenGoat.name} fell off");
+                roundManager.OnGoatFell(fallenGoat);
+            }
+            // If round IS ending, do nothing. The round is already over.
+            // Do NOT fall through to the training behavior which resets agents immediately.
+            return;
+        }
 
-            // Also notify AI agents for rewards (they will handle their own episode ending)
-            // Disabling, since AI agents don't need to train anymore
-            // if (fallenGoatIsAI)
-            // {
-            //     // AI goat fell - it lost the round
-            //     fallenGoatAI.OnAIFellOff();
-            // }
-            // else if (otherGoatIsAI)
-            // {
-            //     // Player goat fell - AI won the round
-            //     otherGoatAI.OnOpponentFellOff();
-            // }
+        // Fallback to training behavior if RoundManager is not available
+        if (fallenGoatIsAI)
+        {
+            Debug.Log("AI goat fell off");
+            // Notify the fallen AI goat that it fell off
+            fallenGoatAI.OnAIFellOff();
+
+            // If the other goat is also AI, notify it that its opponent fell off
+            if (otherGoatIsAI)
+            {
+                otherGoatAI.OnOpponentFellOff();
+            }
         }
         else
         {
-            // Fallback to training behavior if RoundManager is not available
-            if (fallenGoatIsAI)
+            Debug.Log("Player goat fell off");
+            // If the other goat is AI, notify it that its opponent (player) fell off
+            if (otherGoatIsAI)
             {
-                Debug.Log("AI goat fell off");
-                // Notify the fallen AI goat that it fell off
-                fallenGoatAI.OnAIFellOff();
-
-                // If the other goat is also AI, notify it that its opponent fell off
-                if (otherGoatIsAI)
-                {
-                    otherGoatAI.OnOpponentFellOff();
-                }
+                otherGoatAI.OnOpponentFellOff();
             }
-            else
-            {
-                Debug.Log("Player goat fell off");
-                // If the other goat is AI, notify it that its opponent (player) fell off
-                if (otherGoatIsAI)
-                {
-                    otherGoatAI.OnOpponentFellOff();
-                }
-            }
-        }
-
-        // Reset arena size
-        if (ArenaShrinking.Instance != null)
-        {
-            ArenaShrinking.Instance.ResetArenaSize();
         }
     }
+
+    // // Reset arena size
+    // if (ArenaShrinking.Instance != null)
+    // {
+    //     ArenaShrinking.Instance.ResetArenaSize();
+    // }
+
 }

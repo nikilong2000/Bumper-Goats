@@ -5,6 +5,7 @@ using TMPro;
 
 public class RoundManager : MonoBehaviour
 {
+    private static WaitForSeconds _waitForSeconds2 = new WaitForSeconds(2f);
     [Header("Round Settings")]
     [SerializeField] private int maxRounds = 3;
     [SerializeField] private float roundEndDisplayTime = 3f; // Time to show round end screen before restarting
@@ -20,9 +21,17 @@ public class RoundManager : MonoBehaviour
     [SerializeField] private GameObject[] playerHeartsGrey; // Array of grey/used heart GameObjects for player (overlay)
     [SerializeField] private GameObject[] opponentHearts; // Array of heart GameObjects for opponent
     [SerializeField] private GameObject[] opponentHeartsGrey; // Array of grey/used heart GameObjects for opponent (overlay)
-    [SerializeField] private TextMeshProUGUI roundText; // Text to display current round
     [SerializeField] private Image roundImage; // Image to display current round sprite
     [SerializeField] private Sprite[] roundSprites; // Array of sprites for each round (Round 1, Round 2, etc.)
+
+    [Header("Animation Settings")]
+    [SerializeField] private RectTransform roundAnnouncementRect; // The big image that flies
+    [SerializeField] private float animationDuration = 1.5f;
+    [SerializeField] private Vector3 magnifiedScale = new Vector3(3f, 3f, 1f);
+
+    [Header("Audio Settings")]
+    [SerializeField] private AudioClip roundStartSound;
+    [SerializeField] private AudioSource audioSource;
 
     private int currentRound = 1;
     private bool isRoundEnding = false;
@@ -158,15 +167,19 @@ public class RoundManager : MonoBehaviour
     /// </summary>
     private IEnumerator RestartRoundAfterDelay()
     {
+        // Move to next round immediately so we can announce it
+        currentRound++;
+
+        // Start the animation immediately so it plays during the wait time
+        StartCoroutine(AnimateRoundAnnouncement());
+
+        // Wait for the display time (animation plays during this)
         yield return new WaitForSeconds(roundEndDisplayTime);
+
         Debug.Log("New Round!");
 
         // Hide round end panel
         RoundEndPanel(false);
-
-        // Move to next round
-        currentRound++;
-        UpdateRoundUI();
 
         // Note: We already check max rounds in EndRound() before starting this coroutine
         // So we don't need to check again here - if we reach this point, we're continuing to next round
@@ -191,6 +204,90 @@ public class RoundManager : MonoBehaviour
         }
 
         isRoundEnding = false;
+    }
+
+    private IEnumerator AnimateRoundAnnouncement()
+    {
+        if (roundAnnouncementRect == null || roundImage == null || roundSprites == null)
+        {
+            UpdateRoundUI();
+            yield break;
+        }
+
+        // Get next round sprite
+        int spriteIndex = Mathf.Clamp(currentRound - 1, 0, roundSprites.Length - 1);
+        Sprite nextSprite = roundSprites[spriteIndex];
+
+        // Setup Announcement Image
+        if (roundAnnouncementRect.TryGetComponent<Image>(out var announcementImg)) announcementImg.sprite = nextSprite;
+
+        // Setup CanvasGroup for fading
+        if (!roundAnnouncementRect.TryGetComponent<CanvasGroup>(out var canvasGroup))
+        {
+            canvasGroup = roundAnnouncementRect.gameObject.AddComponent<CanvasGroup>();
+        }
+        canvasGroup.alpha = 0f; // Start invisible
+        canvasGroup.blocksRaycasts = false;
+
+        roundAnnouncementRect.gameObject.SetActive(true);
+
+        // Play sound
+        if (roundStartSound != null)
+        {
+            if (audioSource != null)
+            {
+                audioSource.PlayOneShot(roundStartSound);
+            }
+            else
+            {
+                // Fallback if no AudioSource assigned
+                AudioSource.PlayClipAtPoint(roundStartSound, Camera.main.transform.position);
+            }
+        }
+
+        // Start at center (assuming parent is Canvas center or similar)
+        Vector3 startPos = new(Screen.width / 2f, Screen.height / 2f, 0);
+
+        roundAnnouncementRect.position = startPos;
+        roundAnnouncementRect.localScale = magnifiedScale;
+
+        // Target is the HUD image
+        Vector3 targetPos = roundImage.rectTransform.position;
+        Vector3 targetScale = roundImage.rectTransform.localScale; // Usually 1,1,1
+
+        // Phase 1: Fade In
+        float fadeInDuration = 0.5f;
+        float elapsedFade = 0f;
+        while (elapsedFade < fadeInDuration)
+        {
+            elapsedFade += Time.deltaTime;
+            canvasGroup.alpha = Mathf.Clamp01(elapsedFade / fadeInDuration);
+            yield return null;
+        }
+        canvasGroup.alpha = 1f;
+
+        // Phase 2: Wait
+        yield return new WaitForSeconds(1f);
+
+        // Phase 3: Move to Target
+        float elapsedMove = 0f;
+        while (elapsedMove < animationDuration)
+        {
+            elapsedMove += Time.deltaTime;
+            float t = elapsedMove / animationDuration;
+
+            // Add some easing
+            float smoothT = Mathf.SmoothStep(0f, 1f, t);
+
+            roundAnnouncementRect.position = Vector3.Lerp(startPos, targetPos, smoothT);
+            roundAnnouncementRect.localScale = Vector3.Lerp(magnifiedScale, targetScale, smoothT);
+
+            yield return null;
+        }
+
+        // Finish
+        roundAnnouncementRect.gameObject.SetActive(false);
+        UpdateRoundUI(); // This sets the HUD image to the new sprite
     }
 
     /// <summary>
@@ -400,14 +497,8 @@ public class RoundManager : MonoBehaviour
 
     private void UpdateRoundUI()
     {
-        if (roundText != null)
-        {
-            roundText.text = "Round " + currentRound;
-        }
-
         if (roundImage != null && roundSprites != null && roundSprites.Length > 0)
         {
-            // Rounds are 1-based, array is 0-based
             // Clamp to ensure we don't go out of bounds if rounds exceed sprites
             int spriteIndex = Mathf.Clamp(currentRound - 1, 0, roundSprites.Length - 1);
 
