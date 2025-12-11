@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class RoundManager : MonoBehaviour
@@ -20,6 +21,8 @@ public class RoundManager : MonoBehaviour
     [SerializeField] private GameObject[] opponentHearts; // Array of heart GameObjects for opponent
     [SerializeField] private GameObject[] opponentHeartsGrey; // Array of grey/used heart GameObjects for opponent (overlay)
     [SerializeField] private TextMeshProUGUI roundText; // Text to display current round
+    [SerializeField] private Image roundImage; // Image to display current round sprite
+    [SerializeField] private Sprite[] roundSprites; // Array of sprites for each round (Round 1, Round 2, etc.)
 
     private int currentRound = 1;
     private bool isRoundEnding = false;
@@ -400,6 +403,19 @@ public class RoundManager : MonoBehaviour
         if (roundText != null)
         {
             roundText.text = "Round " + currentRound;
+        }
+
+        if (roundImage != null && roundSprites != null && roundSprites.Length > 0)
+        {
+            // Rounds are 1-based, array is 0-based
+            // Clamp to ensure we don't go out of bounds if rounds exceed sprites
+            int spriteIndex = Mathf.Clamp(currentRound - 1, 0, roundSprites.Length - 1);
+
+            if (roundSprites[spriteIndex] != null)
+            {
+                roundImage.sprite = roundSprites[spriteIndex];
+                roundImage.gameObject.SetActive(true);
+            }
         }
     }
 }
