@@ -43,6 +43,17 @@ public class GoatController : MonoBehaviour
     [SerializeField] private Transform opponent; // Drag the opponent goat here in the Inspector
     [SerializeField] private Transform goatModel; // Drag the child object with the renderer here
 
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip attackSound;
+    [SerializeField] private float attackSoundStartTime = 0f; // Skip silence at start of clip
+    [SerializeField] private AudioClip braceSound;
+    [SerializeField] private float braceSoundStartTime = 0f;
+    [SerializeField] private AudioClip dodgeSound;
+    [SerializeField] private float dodgeSoundStartTime = 0f;
+    [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private float jumpSoundStartTime = 0f;
+
     [Header("Stamina Settings")]
     public Image staminaBar;
     public float currentStamina;
@@ -195,6 +206,16 @@ public class GoatController : MonoBehaviour
         goatCollider = GetComponent<Collider>();
         originalMass = rb.mass;
 
+        // Ensure AudioSource is assigned or get it
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+        }
+
         // Disable built-in gravity so we can use custom gravity scale
         rb.useGravity = false;
 
@@ -203,6 +224,29 @@ public class GoatController : MonoBehaviour
 
         // Initialize lives
         InitializeLives();
+    }
+
+    /// <summary>
+    /// Plays a sound clip, preventing overlap by stopping any currently playing sound.
+    /// This ensures clean audio feedback for actions.
+    /// </summary>
+    /// <param name="clip">The audio clip to play</param>
+    /// <param name="startTime">Time in seconds to skip from the beginning (useful for trimming silence)</param>
+    private void PlayActionSound(AudioClip clip, float startTime = 0f)
+    {
+        if (audioSource != null && clip != null)
+        {
+            // Stop any currently playing sound to prevent mixing/muddy audio
+            audioSource.Stop();
+
+            // Play the new sound
+            audioSource.clip = clip;
+
+            // Set start time (clamped to clip length to prevent errors)
+            audioSource.time = Mathf.Clamp(startTime, 0f, clip.length - 0.01f);
+
+            audioSource.Play();
+        }
     }
 
     private void Update()
@@ -369,6 +413,7 @@ public class GoatController : MonoBehaviour
         if (shouldBrace)
         {
             // Debug.Log("Bracing! Mass increased to:" + (originalMass * braceMassMultiplier));
+            PlayActionSound(braceSound, braceSoundStartTime);
 
             // Deduct initial stamina cost
             currentStamina -= braceInitialCost;
@@ -444,6 +489,7 @@ public class GoatController : MonoBehaviour
 
         // Debug.Log($"[GoatController] TryProcessJump() - Jump executed on {gameObject.name}");
         // Execute the jump 
+        PlayActionSound(jumpSound, jumpSoundStartTime);
         currentStamina -= jumpStaminaCost;
         if (staminaBar != null)
             staminaBar.fillAmount = currentStamina / maxStamina;
@@ -465,6 +511,7 @@ public class GoatController : MonoBehaviour
     {
         // Debug.Log($"[GoatController] ChargeAttack() coroutine started on {gameObject.name}");
         isCharging = true;
+        PlayActionSound(attackSound, attackSoundStartTime);
         float attackDirection = attackToTheRight ? 1f : -1f;
 
         // Stamina cost for making the charge
@@ -490,6 +537,7 @@ public class GoatController : MonoBehaviour
     {
         // Debug.Log($"[GoatController] DodgeAnimation() coroutine started on {gameObject.name}");
         isDodging = true;
+        PlayActionSound(dodgeSound, dodgeSoundStartTime);
 
         // Stamina cost for making the dodge
         // Debug.Log("Dodging, stamina cost applied.");

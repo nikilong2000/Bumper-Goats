@@ -7,6 +7,11 @@ public class GoatCombatEffects : MonoBehaviour
     [SerializeField] private GameObject hitEffectPrefab;  // Assign your Spark/Flash prefab here
     [SerializeField] private GameObject dustEffectPrefab; // Assign your Dust prefab here
 
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip hitSound;
+    [SerializeField] private float hitSoundVolume = 1.0f;
+
     private GoatController goatController;
     private bool hasPlayedEffectForCurrentCharge = false;
 
@@ -53,6 +58,17 @@ public class GoatCombatEffects : MonoBehaviour
 
     private void SpawnEffects(Collision collision)
     {
+        // Play hit sound
+        if (hitSound != null)
+        {
+            // Play at the contact point so it has spatial position
+            // Vector3 soundPosition = collision.contactCount > 0 ? collision.contacts[0].point : transform.position;
+            // AudioSource.PlayClipAtPoint(hitSound, soundPosition, hitSoundVolume);
+
+            audioSource.clip = hitSound;
+            audioSource.Play();
+        }
+
         // --- 1. THE HIT EFFECT (Head/Chest) ---
         if (hitEffectPrefab != null && collision.contactCount > 0)
         {
