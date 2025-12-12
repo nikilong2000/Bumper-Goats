@@ -31,7 +31,7 @@ public class GoatController : MonoBehaviour
     [SerializeField] private LayerMask goatLayer; // since the goat should be grounded when hitting the other goat
 
     [Header("Brace Settings")]
-    [SerializeField] private float braceMassMultiplier = 3f; // how many times heavier when bracing
+    [SerializeField] private float braceMassMultiplier = 1f; // how many times heavier when bracing
 
     [Header("Dodge Settings")]
     [SerializeField] private float dodgeDistance = 5.6f; // How far to shift on z-axis
