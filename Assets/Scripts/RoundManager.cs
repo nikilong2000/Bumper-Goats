@@ -17,6 +17,7 @@ public class RoundManager : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private GameObject roundEndPanel; // Panel that shows round information
     [SerializeField] private GameObject matchEndPanel; // Panel that shows match end information
+    [SerializeField] private TextMeshProUGUI winnerText; // Text to display the winner
     [SerializeField] private GameObject[] playerHearts; // Array of heart GameObjects for player
     [SerializeField] private GameObject[] playerHeartsGrey; // Array of grey/used heart GameObjects for player (overlay)
     [SerializeField] private GameObject[] opponentHearts; // Array of heart GameObjects for opponent
@@ -54,6 +55,31 @@ public class RoundManager : MonoBehaviour
             goat2AI = goat2.GetComponent<AiGoatScript>();
         }
 
+        // Find GameOver GameObject if not assigned
+        if (matchEndPanel == null)
+        {
+            // Try to find active object by tag
+            GameObject activePanel = GameObject.FindGameObjectWithTag("GameOverUI");
+            if (activePanel != null)
+            {
+                matchEndPanel = activePanel;
+            }
+            else
+            {
+                // Search for inactive objects by tag
+                GameObject[] allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
+                foreach (GameObject obj in allObjects)
+                {
+                    // Check if object is in the scene (not an asset) and has the tag
+                    if (obj.scene.IsValid() && obj.CompareTag("GameOverUI"))
+                    {
+                        matchEndPanel = obj;
+                        break;
+                    }
+                }
+            }
+        }
+
         // Hide all panels initially
         RoundEndPanel(false);
         MatchEndPanel(false);
@@ -61,6 +87,8 @@ public class RoundManager : MonoBehaviour
 
     private void Start()
     {
+        Time.timeScale = 1f; // Ensure game is running
+
         // Initialize lives for both goats
         if (goat1Controller != null)
         {
@@ -160,6 +188,9 @@ public class RoundManager : MonoBehaviour
         RoundEndPanel(false);
         // Show appropriate match end panel based on player win/loss
         MatchEndPanel(true, playerWon);
+
+        // Freeze the game
+        Time.timeScale = 0f;
     }
 
     /// <summary>
@@ -390,6 +421,9 @@ public class RoundManager : MonoBehaviour
     /// </summary>
     public void RestartMatch()
     {
+        // Unfreeze the game
+        Time.timeScale = 1f;
+
         // Hide all panels
         RoundEndPanel(false);
         MatchEndPanel(false);
@@ -445,15 +479,24 @@ public class RoundManager : MonoBehaviour
         if (matchEndPanel != null)
         {
             matchEndPanel.SetActive(active);
-            if (playerWon && active)
+
+            if (active)
             {
-                Debug.Log("Setting active elements for player win");
-                // TODO: setting active elements for player win
-            }
-            else
-            {
-                Debug.Log("Setting active elements for player lose");
-                // TODO: setting active elements for player lose
+                if (winnerText != null)
+                {
+                    winnerText.text = playerWon ? "Player Wins!" : "Opponent Wins!";
+                }
+
+                if (playerWon)
+                {
+                    Debug.Log("Setting active elements for player win");
+                    // TODO: setting active elements for player win
+                }
+                else
+                {
+                    Debug.Log("Setting active elements for player lose");
+                    // TODO: setting active elements for player lose
+                }
             }
         }
     }

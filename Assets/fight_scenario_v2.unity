@@ -2007,12 +2007,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60535464bca8f4b14a2540c9df09440e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxRounds: 3
+  maxRounds: 5
   roundEndDisplayTime: 5
   goat1: {fileID: 440613385}
   goat2: {fileID: 1316124915}
   roundEndPanel: {fileID: 0}
   matchEndPanel: {fileID: 0}
+  winnerText: {fileID: 457191067}
   playerHearts:
   - {fileID: 2145362668}
   - {fileID: 658747420}
