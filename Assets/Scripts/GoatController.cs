@@ -422,7 +422,7 @@ public class GoatController : MonoBehaviour
 
             // make goat heavier (more stable)
             rb.mass = originalMass * braceMassMultiplier;
-            rb.constraints |= RigidbodyConstraints.FreezePositionX; // hinder movement
+            // rb.constraints |= RigidbodyConstraints.FreezePositionX; // hinder movement
 
             // Stop stamina regen and start draining
             if (staminaRegenCoroutine != null)
