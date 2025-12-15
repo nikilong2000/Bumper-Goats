@@ -256,12 +256,16 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   attackSound: {fileID: 0}
   attackSoundStartTime: 0
+  attackSoundVolume: 1
   braceSound: {fileID: 0}
   braceSoundStartTime: 0
+  braceSoundVolume: 1
   dodgeSound: {fileID: 0}
   dodgeSoundStartTime: 0
+  dodgeSoundVolume: 1
   jumpSound: {fileID: 0}
   jumpSoundStartTime: 0
+  jumpSoundVolume: 1
   staminaBar: {fileID: 324699390}
   currentStamina: 100
   maxStamina: 100
@@ -1678,7 +1682,7 @@ MonoBehaviour:
   roundAnnouncementRect: {fileID: 1001784882}
   animationDuration: 1.5
   magnifiedScale: {x: 6, y: 3.4, z: 1}
-  roundStartSound: {fileID: 8300000, guid: 18bd3b55fc7874b1ea6b9d491e2cd36e, type: 3}
+  roundStartSound: {fileID: 8300000, guid: 9aa22e84bd0c2423bb32ab5e9f0a282e, type: 3}
   audioSource: {fileID: 1364900645}
 --- !u!4 &583252545
 Transform:
@@ -3672,7 +3676,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.665
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -5421,12 +5425,16 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   attackSound: {fileID: 0}
   attackSoundStartTime: 0
+  attackSoundVolume: 1
   braceSound: {fileID: 0}
   braceSoundStartTime: 0
+  braceSoundVolume: 1
   dodgeSound: {fileID: 0}
   dodgeSoundStartTime: 0
+  dodgeSoundVolume: 1
   jumpSound: {fileID: 0}
   jumpSoundStartTime: 0
+  jumpSoundVolume: 1
   staminaBar: {fileID: 0}
   currentStamina: 100
   maxStamina: 100
@@ -5643,7 +5651,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitEffectPrefab: {fileID: 5238538877814813142, guid: 47096eff328e11a418ace7db2d72aa97, type: 3}
-  dustEffectPrefab: {fileID: 0}
   audioSource: {fileID: 0}
   hitSound: {fileID: 0}
   hitSoundVolume: 1
@@ -5945,6 +5952,18 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 177101841}
     - target: {fileID: 6838962898314795816, guid: 8bdd76f76611043b4b463af6fea623b2, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6838962898314795816, guid: 8bdd76f76611043b4b463af6fea623b2, type: 3}
+      propertyPath: braceSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 06c164bf9055b4d8aa50e13bef494856, type: 3}
+    - target: {fileID: 6838962898314795816, guid: 8bdd76f76611043b4b463af6fea623b2, type: 3}
+      propertyPath: dodgeSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 7b1b3ccb467484eeab410e372f57534a, type: 3}
+    - target: {fileID: 6838962898314795816, guid: 8bdd76f76611043b4b463af6fea623b2, type: 3}
       propertyPath: staminaBar
       value: 
       objectReference: {fileID: 377475654}
@@ -5952,6 +5971,18 @@ PrefabInstance:
       propertyPath: audioSource
       value: 
       objectReference: {fileID: 924959492}
+    - target: {fileID: 6838962898314795816, guid: 8bdd76f76611043b4b463af6fea623b2, type: 3}
+      propertyPath: braceSoundVolume
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6838962898314795816, guid: 8bdd76f76611043b4b463af6fea623b2, type: 3}
+      propertyPath: dodgeSoundVolume
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6838962898314795816, guid: 8bdd76f76611043b4b463af6fea623b2, type: 3}
+      propertyPath: braceSoundStartTime
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8748751492296436371, guid: 8bdd76f76611043b4b463af6fea623b2, type: 3}
       propertyPath: m_Name
       value: GoatAI
@@ -6035,6 +6066,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 177101841}
     - target: {fileID: 7663898549302517353, guid: ae73c335ddf8747a986caaab789f557b, type: 3}
+      propertyPath: braceSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 06c164bf9055b4d8aa50e13bef494856, type: 3}
+    - target: {fileID: 7663898549302517353, guid: ae73c335ddf8747a986caaab789f557b, type: 3}
+      propertyPath: dodgeSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 7b1b3ccb467484eeab410e372f57534a, type: 3}
+    - target: {fileID: 7663898549302517353, guid: ae73c335ddf8747a986caaab789f557b, type: 3}
       propertyPath: staminaBar
       value: 
       objectReference: {fileID: 324699390}
@@ -6042,6 +6081,18 @@ PrefabInstance:
       propertyPath: audioSource
       value: 
       objectReference: {fileID: 924959492}
+    - target: {fileID: 7663898549302517353, guid: ae73c335ddf8747a986caaab789f557b, type: 3}
+      propertyPath: braceSoundVolume
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7663898549302517353, guid: ae73c335ddf8747a986caaab789f557b, type: 3}
+      propertyPath: dodgeSoundVolume
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7663898549302517353, guid: ae73c335ddf8747a986caaab789f557b, type: 3}
+      propertyPath: braceSoundStartTime
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

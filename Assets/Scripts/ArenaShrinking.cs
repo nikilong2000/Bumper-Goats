@@ -30,7 +30,7 @@ public class ArenaShrinking : MonoBehaviour
 
     void Start()
     {
-        // Get object by tag
+        // Finds the arena object.
         arenaObject = GameObject.FindGameObjectWithTag("Platform");
 
         if (arenaObject == null)
@@ -38,13 +38,13 @@ public class ArenaShrinking : MonoBehaviour
             Debug.LogError("Arena object not found");
         }
 
-        // Store the initial scale
+        // Stores the initial scale.
         initialScale = arenaObject.transform.localScale;
 
-        // Calculate and cache initial platform radius
+        // Calculates the platform radius.
         UpdatePlatformRadius();
 
-        // Start timer
+        // Starts the timer.
         timer = 0.0f;
     }
 
@@ -54,16 +54,16 @@ public class ArenaShrinking : MonoBehaviour
 
         if (timer > gracePeriod && arenaObject != null && !shrinkingDisabled)
         {
-            // Reduce scale
+            // Shrinks the arena.
             Vector3 currentScale = arenaObject.transform.localScale;
-            
-            // Only reduce if above minimum
+
+            // Checks minimum size.
             if (currentScale.x > minScale.x)
             {
                 currentScale.x -= reduceSpeed * Time.deltaTime;
                 currentScale.x = Mathf.Max(currentScale.x, minScale.x);
             }
-            
+
             if (currentScale.z > minScale.z)
             {
                 currentScale.z -= reduceSpeed * Time.deltaTime;
@@ -72,7 +72,7 @@ public class ArenaShrinking : MonoBehaviour
 
             arenaObject.transform.localScale = currentScale;
 
-            // Update cached radius when scale changes
+            // Updates the radius.
             UpdatePlatformRadius();
         }
     }
@@ -80,19 +80,19 @@ public class ArenaShrinking : MonoBehaviour
     private void UpdatePlatformRadius()
     {
         if (arenaObject == null) return;
-        
-        // Search for MeshCollider in the arena object and its children
+
+        // Finds the mesh collider.
         MeshCollider meshCollider = arenaObject.GetComponentInChildren<MeshCollider>();
         if (meshCollider != null)
         {
-            // Get bounds in world space (accounts for scale)
+            // Gets the bounds.
             Bounds bounds = meshCollider.bounds;
-            // For circular platform, use max of x and z extents as radius
+            // Sets the radius.
             platformRadius = Mathf.Max(bounds.extents.x, bounds.extents.z);
         }
         else
         {
-            // Fallback: try Renderer bounds in children
+            // Tries the renderer bounds.
             Renderer renderer = arenaObject.GetComponentInChildren<Renderer>();
             if (renderer != null)
             {

@@ -17,12 +17,10 @@ public class MenuScript : MonoBehaviour
     public void OnSettingsButtonPressed()
     {
         Debug.Log("Settings button pressed!"); // Debug: Check if method is called
-        
-        // Enable settings panel and disable main menu
-        // FindGameObjectWithTag doesn't find inactive objects, so we search all objects
+
         GameObject[] allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
         GameObject settingsPanel = null;
-        
+
         foreach (GameObject obj in allObjects)
         {
             if (obj.CompareTag("SettingsUI"))
@@ -31,7 +29,7 @@ public class MenuScript : MonoBehaviour
                 break;
             }
         }
-        
+
         if (settingsPanel != null)
         {
             Debug.Log("Settings panel found, activating it."); // Debug: Panel found
@@ -46,11 +44,10 @@ public class MenuScript : MonoBehaviour
     public void OnCloseSettingsButtonPressed()
     {
         Debug.Log("Close settings button pressed!"); // Debug: Check if method is called
-        
-        // Disable settings panel and re-enable to main menu
+
         GameObject[] allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
         GameObject settingsPanel = null;
-        
+
         foreach (GameObject obj in allObjects)
         {
             if (obj.CompareTag("SettingsUI"))
@@ -59,7 +56,7 @@ public class MenuScript : MonoBehaviour
                 break;
             }
         }
-        
+
         if (settingsPanel != null)
         {
             Debug.Log("Settings panel found, deactivating it."); // Debug: Panel found

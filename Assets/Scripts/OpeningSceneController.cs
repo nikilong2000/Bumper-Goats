@@ -15,20 +15,14 @@ public class OpeningSceneController : MonoBehaviour
 
     private void Start()
     {
-        // Ensure camera is assigned
         if (targetCamera == null)
         {
             targetCamera = Camera.main;
         }
 
-        // Initialize UI state
         if (mainMenuCanvasGroup != null)
         {
             mainMenuCanvasGroup.alpha = 0f;
-            mainMenuCanvasGroup.gameObject.SetActive(false); // Ensure it's disabled initially if desired, or just invisible
-            // However, to fade it in, it needs to be active but invisible.
-            // Let's keep it active but alpha 0, or activate it before fading.
-            // The prompt says "main menu UI should be activated", implying SetActive(true).
             mainMenuCanvasGroup.gameObject.SetActive(false);
         }
 
@@ -40,8 +34,7 @@ public class OpeningSceneController : MonoBehaviour
         // 1. Setup Camera at Start Position
         if (targetCamera != null && startPosition != null)
         {
-            targetCamera.transform.position = startPosition.position;
-            targetCamera.transform.rotation = startPosition.rotation;
+            targetCamera.transform.SetPositionAndRotation(startPosition.position, startPosition.rotation);
         }
 
         // 2. Fly Camera
@@ -51,22 +44,17 @@ public class OpeningSceneController : MonoBehaviour
             if (targetCamera != null && startPosition != null && endPosition != null)
             {
                 float t = elapsed / flyDuration;
-                // Optional: Use smooth step for nicer movement
-                // t = Mathf.SmoothStep(0f, 1f, t); 
 
-                targetCamera.transform.position = Vector3.Lerp(startPosition.position, endPosition.position, t);
-                targetCamera.transform.rotation = Quaternion.Lerp(startPosition.rotation, endPosition.rotation, t);
+                targetCamera.transform.SetPositionAndRotation(Vector3.Lerp(startPosition.position, endPosition.position, t), Quaternion.Lerp(startPosition.rotation, endPosition.rotation, t));
             }
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // Ensure we reach the exact end position
         if (targetCamera != null && endPosition != null)
         {
-            targetCamera.transform.position = endPosition.position;
-            targetCamera.transform.rotation = endPosition.rotation;
+            targetCamera.transform.SetPositionAndRotation(endPosition.position, endPosition.rotation);
         }
 
         // 3. Activate and Fade In UI
@@ -85,7 +73,6 @@ public class OpeningSceneController : MonoBehaviour
             }
             mainMenuCanvasGroup.alpha = 1f;
 
-            // Enable interactions if blocked by CanvasGroup
             mainMenuCanvasGroup.interactable = true;
             mainMenuCanvasGroup.blocksRaycasts = true;
         }

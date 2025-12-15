@@ -15,29 +15,24 @@ public class TrainingViewToggle : MonoBehaviour
 
     void Awake()
     {
-        baseFixed = Time.fixedDeltaTime; // usually 0.02
+        // Stores the initial fixed delta time.
+        baseFixed = Time.fixedDeltaTime;
     }
 
     void Start()
     {
         bool communicatorOn = Academy.IsInitialized && Academy.Instance.IsCommunicatorOn;
 
-        // Are there any agents set to 'Default' (i.e., trainable)?
+        // Checks if any agent is using default behaviour.
         var allBps = Object.FindObjectsByType<BehaviorParameters>(FindObjectsSortMode.None);
         bool anyDefault = allBps.Any(bp => bp.BehaviorType == BehaviorType.Default);
 
-        // Effective training only if communicator is on AND some agent is in Default
+        // Determines if training is active.
         bool effectiveTraining = communicatorOn && anyDefault;
 
         float targetScale = effectiveTraining ? trainingTimeScale : normalTimeScale;
-        
-        // During training, always use 1.0 for Unity's Time.timeScale to respect Academy stepping
-        // if (effectiveTraining)
-        // {
-        //     targetScale = 1.0f;
-        // }
 
-        // Set both timeScale and fixedDeltaTime together to keep physics cadence stable
+        // Sets the time scale and fixed delta time.
         Time.timeScale = targetScale;
         Time.fixedDeltaTime = baseFixed * targetScale;
     }

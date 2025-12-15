@@ -8,25 +8,25 @@ public class RoundManager : MonoBehaviour
     private static WaitForSeconds _waitForSeconds2 = new WaitForSeconds(2f);
     [Header("Round Settings")]
     [SerializeField] private int maxRounds = 3;
-    [SerializeField] private float roundEndDisplayTime = 3f; // Time to show round end screen before restarting
+    [SerializeField] private float roundEndDisplayTime = 3f;
 
     [Header("Goat References")]
-    [SerializeField] private GameObject goat1; // ALWAYS the Player
-    [SerializeField] private GameObject goat2; // ALWAYS the AI opponent
+    [SerializeField] private GameObject goat1;
+    [SerializeField] private GameObject goat2;
 
     [Header("UI References")]
-    [SerializeField] private GameObject roundEndPanel; // Panel that shows round information
-    [SerializeField] private GameObject matchEndPanel; // Panel that shows match end information
-    [SerializeField] private TextMeshProUGUI winnerText; // Text to display the winner
-    [SerializeField] private GameObject[] playerHearts; // Array of heart GameObjects for player
-    [SerializeField] private GameObject[] playerHeartsGrey; // Array of grey/used heart GameObjects for player (overlay)
-    [SerializeField] private GameObject[] opponentHearts; // Array of heart GameObjects for opponent
-    [SerializeField] private GameObject[] opponentHeartsGrey; // Array of grey/used heart GameObjects for opponent (overlay)
-    [SerializeField] private Image roundImage; // Image to display current round sprite
-    [SerializeField] private Sprite[] roundSprites; // Array of sprites for each round (Round 1, Round 2, etc.)
+    [SerializeField] private GameObject roundEndPanel;
+    [SerializeField] private GameObject matchEndPanel;
+    [SerializeField] private TextMeshProUGUI winnerText;
+    [SerializeField] private GameObject[] playerHearts;
+    [SerializeField] private GameObject[] playerHeartsGrey;
+    [SerializeField] private GameObject[] opponentHearts;
+    [SerializeField] private GameObject[] opponentHeartsGrey;
+    [SerializeField] private Image roundImage;
+    [SerializeField] private Sprite[] roundSprites;
 
     [Header("Animation Settings")]
-    [SerializeField] private RectTransform roundAnnouncementRect; // The big image that flies
+    [SerializeField] private RectTransform roundAnnouncementRect;
     [SerializeField] private float animationDuration = 1.5f;
     [SerializeField] private Vector3 magnifiedScale = new Vector3(3f, 3f, 1f);
 
@@ -43,7 +43,7 @@ public class RoundManager : MonoBehaviour
 
     private void Awake()
     {
-        // Get GoatController components
+        // Gets controller components.
         if (goat1 != null)
         {
             goat1Controller = goat1.GetComponent<GoatController>();
@@ -55,10 +55,9 @@ public class RoundManager : MonoBehaviour
             goat2AI = goat2.GetComponent<AiGoatScript>();
         }
 
-        // Find GameOver GameObject if not assigned
+        // Finds the game over panel.
         if (matchEndPanel == null)
         {
-            // Try to find active object by tag
             GameObject activePanel = GameObject.FindGameObjectWithTag("GameOverUI");
             if (activePanel != null)
             {
@@ -66,11 +65,9 @@ public class RoundManager : MonoBehaviour
             }
             else
             {
-                // Search for inactive objects by tag
                 GameObject[] allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
                 foreach (GameObject obj in allObjects)
                 {
-                    // Check if object is in the scene (not an asset) and has the tag
                     if (obj.scene.IsValid() && obj.CompareTag("GameOverUI"))
                     {
                         matchEndPanel = obj;
@@ -80,16 +77,17 @@ public class RoundManager : MonoBehaviour
             }
         }
 
-        // Hide all panels initially
+        // Hides panels.
         RoundEndPanel(false);
         MatchEndPanel(false);
     }
 
     private void Start()
     {
-        Time.timeScale = 1f; // Ensure game is running
+        // Ensures the game is running.
+        Time.timeScale = 1f;
 
-        // Initialize lives for both goats
+        // Initialises lives.
         if (goat1Controller != null)
         {
             goat1Controller.InitializeLives();
@@ -103,128 +101,94 @@ public class RoundManager : MonoBehaviour
         UpdateRoundUI();
     }
 
-    /// <summary>
-    /// Called when a goat falls off the platform
-    /// </summary>
+    // Called when a goat falls.
     public void OnGoatFell(GameObject fallenGoat)
     {
-        if (isRoundEnding) return; // Prevent multiple calls
+        if (isRoundEnding) return;
 
-        // Determine which goat fell
+        // Identifies the fallen goat.
         GoatController fallenController = fallenGoat.GetComponent<GoatController>();
         if (fallenController == null) return;
 
-        // Lose a life
+        // Loses a life.
         bool isOutOfLives = fallenController.LoseLife();
 
-        // Update UI
+        // Updates the UI.
         UpdateHeartsUI();
 
-        // Determine the other goat
+        // Identifies the other goat.
         GameObject otherGoat = (fallenGoat == goat1) ? goat2 : goat1;
         GoatController otherController = otherGoat != null ? otherGoat.GetComponent<GoatController>() : null;
 
-        // Check if match is over (one goat is out of lives)
+        // Checks if the match is over.
         if (isOutOfLives)
         {
-            // Match is over - one goat has no lives left
             string winnerName = otherGoat != null ? otherGoat.name : "Unknown";
             Debug.Log($"Match Over! {winnerName} wins!");
             EndMatch(winnerName);
         }
         else
         {
-            // Round is over, but match continues
             string roundWinnerName = otherGoat != null ? otherGoat.name : "Unknown";
             Debug.Log($"Round {currentRound} Over! {roundWinnerName} wins the round!");
             EndRound(roundWinnerName);
         }
     }
 
-    /// <summary>
-    /// End the current round and prepare for the next one
-    /// </summary>
+    // Ends the round.
     private void EndRound(string roundWinnerName)
     {
         if (isRoundEnding) return;
         isRoundEnding = true;
 
-        // Note: AI agents are notified by FallZoneDetector when goats fall
-        // The AI will handle its own rewards and episode ending
-        // RoundManager just controls the UI and round/match flow
-
-        // Check if we've reached max rounds
+        // Checks for max rounds.
         if (currentRound >= maxRounds)
         {
-            // Match is over - max rounds reached
-            // Determine winner based on lives remaining (or last round winner if tied)
             DetermineMatchWinnerByLives(roundWinnerName);
         }
         else
         {
-            // Show round end panel
             RoundEndPanel(true);
-
-            // Start coroutine to restart the round after delay
             StartCoroutine(RestartRoundAfterDelay());
         }
     }
 
-    /// <summary>
-    /// End the match (one goat is out of lives OR max rounds reached)
-    /// </summary>
+    // Ends the match.
     private void EndMatch(string winnerName)
     {
         if (isRoundEnding) return;
         isRoundEnding = true;
 
-        // Determine which goat won (goat1 is always the player)
+        // Determines the winner.
         bool playerWon = (winnerName == goat1.name);
 
-        // Note: AI agents will handle their own episode ending via FallZoneDetector
-        // The AI will get rewards when goats fall, but RoundManager controls the round/match flow
-
-        // Hide round end panel if it's showing
         RoundEndPanel(false);
-        // Show appropriate match end panel based on player win/loss
         MatchEndPanel(true, playerWon);
 
-        // Freeze the game
+        // Freezes the game.
         Time.timeScale = 0f;
     }
 
-    /// <summary>
-    /// Restart the current round after showing the round end screen
-    /// </summary>
+    // Restarts the round.
     private IEnumerator RestartRoundAfterDelay()
     {
-        // Move to next round immediately so we can announce it
         currentRound++;
 
-        // Start the animation immediately so it plays during the wait time
         StartCoroutine(AnimateRoundAnnouncement());
 
-        // Wait for the display time (animation plays during this)
         yield return new WaitForSeconds(roundEndDisplayTime);
 
         Debug.Log("New Round!");
 
-        // Hide round end panel
         RoundEndPanel(false);
 
-        // Note: We already check max rounds in EndRound() before starting this coroutine
-        // So we don't need to check again here - if we reach this point, we're continuing to next round
-
-        // Reset arena size if needed
+        // Resets the arena.
         if (ArenaShrinking.Instance != null)
         {
             ArenaShrinking.Instance.ResetArenaSize();
         }
 
-        // Reset AI episode if needed (for training)
-        // Note: Since AI ends episodes when goats fall, OnEpisodeBegin will be called automatically
-        // But we can manually trigger it here to ensure proper reset between rounds
-        // This also resets both of the goats
+        // Resets the AI.
         if (goat1AI != null)
         {
             goat1AI.OnEpisodeBegin();
@@ -245,24 +209,24 @@ public class RoundManager : MonoBehaviour
             yield break;
         }
 
-        // Get next round sprite
+        // Gets the next sprite.
         int spriteIndex = Mathf.Clamp(currentRound - 1, 0, roundSprites.Length - 1);
         Sprite nextSprite = roundSprites[spriteIndex];
 
-        // Setup Announcement Image
+        // Sets up the image.
         if (roundAnnouncementRect.TryGetComponent<Image>(out var announcementImg)) announcementImg.sprite = nextSprite;
 
-        // Setup CanvasGroup for fading
+        // Sets up fading.
         if (!roundAnnouncementRect.TryGetComponent<CanvasGroup>(out var canvasGroup))
         {
             canvasGroup = roundAnnouncementRect.gameObject.AddComponent<CanvasGroup>();
         }
-        canvasGroup.alpha = 0f; // Start invisible
+        canvasGroup.alpha = 0f;
         canvasGroup.blocksRaycasts = false;
 
         roundAnnouncementRect.gameObject.SetActive(true);
 
-        // Play sound
+        // Plays a sound.
         if (roundStartSound != null)
         {
             if (audioSource != null)
@@ -271,22 +235,21 @@ public class RoundManager : MonoBehaviour
             }
             else
             {
-                // Fallback if no AudioSource assigned
                 AudioSource.PlayClipAtPoint(roundStartSound, Camera.main.transform.position);
             }
         }
 
-        // Start at center (assuming parent is Canvas center or similar)
+        // Starts at the centre.
         Vector3 startPos = new(Screen.width / 2f, Screen.height / 2f, 0);
 
         roundAnnouncementRect.position = startPos;
         roundAnnouncementRect.localScale = magnifiedScale;
 
-        // Target is the HUD image
+        // Targets the HUD.
         Vector3 targetPos = roundImage.rectTransform.position;
-        Vector3 targetScale = roundImage.rectTransform.localScale; // Usually 1,1,1
+        Vector3 targetScale = roundImage.rectTransform.localScale;
 
-        // Phase 1: Fade In
+        // Phase 1: Fades in.
         float fadeInDuration = 0.5f;
         float elapsedFade = 0f;
         while (elapsedFade < fadeInDuration)
@@ -297,17 +260,16 @@ public class RoundManager : MonoBehaviour
         }
         canvasGroup.alpha = 1f;
 
-        // Phase 2: Wait
+        // Phase 2: Waits.
         yield return new WaitForSeconds(1f);
 
-        // Phase 3: Move to Target
+        // Phase 3: Moves to target.
         float elapsedMove = 0f;
         while (elapsedMove < animationDuration)
         {
             elapsedMove += Time.deltaTime;
             float t = elapsedMove / animationDuration;
 
-            // Add some easing
             float smoothT = Mathf.SmoothStep(0f, 1f, t);
 
             roundAnnouncementRect.position = Vector3.Lerp(startPos, targetPos, smoothT);
@@ -316,14 +278,11 @@ public class RoundManager : MonoBehaviour
             yield return null;
         }
 
-        // Finish
         roundAnnouncementRect.gameObject.SetActive(false);
-        UpdateRoundUI(); // This sets the HUD image to the new sprite
+        UpdateRoundUI();
     }
 
-    /// <summary>
-    /// Determine match winner based on lives remaining (or last round winner if tied)
-    /// </summary>
+    // Determines the match winner.
     private void DetermineMatchWinnerByLives(string lastRoundWinner)
     {
         int goat1Lives = goat1Controller != null ? goat1Controller.CurrentLives : 0;
@@ -342,7 +301,7 @@ public class RoundManager : MonoBehaviour
         }
         else
         {
-            // Lives are tied - winner is whoever won the last round
+            // Handles ties.
             winnerName = lastRoundWinner;
             Debug.Log($"Match Over (Max Rounds)! Lives tied. Winner determined by last round: {winnerName}");
         }
@@ -350,31 +309,26 @@ public class RoundManager : MonoBehaviour
         EndMatch(winnerName);
     }
 
-    /// <summary>
-    /// Restart the entire match after showing the match end screen
-    /// </summary>
+    // Restarts the match.
     private IEnumerator RestartMatchAfterDelay()
     {
-        yield return new WaitForSeconds(roundEndDisplayTime * 2f); // Show match end screen longer
+        yield return new WaitForSeconds(roundEndDisplayTime * 2f);
 
-        // Hide all panels
+        // Hides panels.
         RoundEndPanel(false);
         MatchEndPanel(false);
 
-        // Reset round counter
+        // Resets the counter.
         currentRound = 1;
         UpdateRoundUI();
 
-        // Reset arena size if needed
+        // Resets the arena.
         if (ArenaShrinking.Instance != null)
         {
             ArenaShrinking.Instance.ResetArenaSize();
         }
 
-        // Reset AI episode if needed (for training)
-        // Note: Since AI ends episodes when goats fall, OnEpisodeBegin will be called automatically
-        // But we can manually trigger it here to ensure proper reset between rounds
-        // This also resets both of the goats
+        // Resets the AI.
         if (goat1AI != null)
         {
             goat1AI.OnEpisodeBegin();
@@ -385,7 +339,7 @@ public class RoundManager : MonoBehaviour
         }
 
 
-        // Reset lives for both goats
+        // Resets lives.
         if (goat1Controller != null)
         {
             goat1Controller.ResetLives();
@@ -400,39 +354,33 @@ public class RoundManager : MonoBehaviour
         isRoundEnding = false;
     }
 
-    /// <summary>
-    /// Get the current round number
-    /// </summary>
+    // Gets the round number.
     public int GetCurrentRound()
     {
         return currentRound;
     }
 
-    /// <summary>
-    /// Check if a round is currently ending
-    /// </summary>
+    // Checks if the round is ending.
     public bool IsRoundEnding()
     {
         return isRoundEnding;
     }
 
-    /// <summary>
-    /// Public method to restart the match (call this from UI button)
-    /// </summary>
+    // Restarts the match.
     public void RestartMatch()
     {
-        // Unfreeze the game
+        // Unfreezes the game.
         Time.timeScale = 1f;
 
-        // Hide all panels
+        // Hides panels.
         RoundEndPanel(false);
         MatchEndPanel(false);
 
-        // Reset round counter
+        // Resets the counter.
         currentRound = 1;
         UpdateRoundUI();
 
-        // Reset lives for both goats
+        // Resets lives.
         if (goat1Controller != null)
         {
             goat1Controller.ResetLives();
@@ -443,14 +391,13 @@ public class RoundManager : MonoBehaviour
         }
         UpdateHeartsUI();
 
-        // Reset arena size if needed
+        // Resets the arena.
         if (ArenaShrinking.Instance != null)
         {
             ArenaShrinking.Instance.ResetArenaSize();
         }
 
-        // Reset AI episode if needed (for training)
-        // This also resets both of the goats
+        // Resets the AI.
         if (goat1AI != null)
         {
             goat1AI.OnEpisodeBegin();
@@ -460,7 +407,7 @@ public class RoundManager : MonoBehaviour
             goat2AI.OnEpisodeBegin();
         }
 
-        // Reset the round ending flag
+        // Resets the flag.
         isRoundEnding = false;
 
         Debug.Log("Match restarted!");
@@ -490,12 +437,10 @@ public class RoundManager : MonoBehaviour
                 if (playerWon)
                 {
                     Debug.Log("Setting active elements for player win");
-                    // TODO: setting active elements for player win
                 }
                 else
                 {
                     Debug.Log("Setting active elements for player lose");
-                    // TODO: setting active elements for player lose
                 }
             }
         }
@@ -521,16 +466,15 @@ public class RoundManager : MonoBehaviour
                 {
                     if (usingOverlay && i < greyHearts.Length && greyHearts[i] != null)
                     {
-                        // Overlay Mode:
-                        // Base heart stays active (so it doesn't disappear)
+                        // Overlay mode.
                         hearts[i].SetActive(true);
 
-                        // Overlay is active when life is lost (to make it look used)
+                        // Activates the overlay.
                         greyHearts[i].SetActive(!hasLife);
                     }
                     else
                     {
-                        // Standard Mode (Disappear):
+                        // Standard mode.
                         hearts[i].SetActive(hasLife);
                     }
                 }
@@ -542,7 +486,7 @@ public class RoundManager : MonoBehaviour
     {
         if (roundImage != null && roundSprites != null && roundSprites.Length > 0)
         {
-            // Clamp to ensure we don't go out of bounds if rounds exceed sprites
+            // Clamps the index.
             int spriteIndex = Mathf.Clamp(currentRound - 1, 0, roundSprites.Length - 1);
 
             if (roundSprites[spriteIndex] != null)
